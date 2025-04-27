@@ -68,7 +68,7 @@ const GalaxyClicker: React.FC = () => {
   const hasBlackHoleEvent = state.activeEvents?.some(event => event.id === 'blackHoleRift') ?? false;
 
   return (
-    <div className="relative w-48 h-48 md:w-64 md:h-64 flex items-center justify-center">
+    <div className="relative w-48 h-48 md:w-64 md:h-64 flex items-center justify-center bg-transparent">
       {showParticles && (
         <StarParticles x={particlePosition.x} y={particlePosition.y} />
       )}

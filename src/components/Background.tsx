@@ -23,11 +23,11 @@ const Background: React.FC = () => {
     <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
       {/* Deep space background gradient */}
       <div className="absolute inset-0 bg-gradient-to-b from-[#0E0B3D] via-[#2E065D] to-[#3B185F]" />
-      {/* Nebula overlays */}
+      {/* Nebula overlays - now all full viewport, feathered to 100% transparent at edges */}
       <div className="absolute inset-0">
-        <div className="absolute top-0 left-0 w-2/3 h-2/3 bg-[radial-gradient(circle_at_30%_30%,rgba(111,66,193,0.25)_0%,transparent_70%)]" />
-        <div className="absolute bottom-0 right-0 w-2/3 h-2/3 bg-[radial-gradient(circle_at_80%_80%,rgba(56,189,248,0.18)_0%,transparent_70%)]" />
-        <div className="absolute top-1/3 right-1/4 w-1/2 h-1/2 bg-[radial-gradient(circle_at_70%_40%,rgba(192,132,252,0.15)_0%,transparent_60%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(111,66,193,0.22)_0%,rgba(111,66,193,0.12)_60%,transparent_100%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_80%,rgba(56,189,248,0.13)_0%,rgba(56,189,248,0.07)_60%,transparent_100%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_40%,rgba(192,132,252,0.10)_0%,rgba(192,132,252,0.04)_60%,transparent_100%)]" />
       </div>
       {/* Faint starfield */}
       <div className="absolute inset-0">
