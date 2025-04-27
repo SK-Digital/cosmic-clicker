@@ -60,6 +60,11 @@ Cosmic Clicker is a clicker/idle game where players collect stardust by clicking
 - Add music and sound effects
 - Implement settings menu
 
+## [x] Refine falling star animation and StardustCounter UI
+- The meteor (falling star) animation is now a glowing, diagonal shooting star with a fading tail.
+- StardustCounter panel is now less boxy and more glassy.
+- Playwright UI test setup is being prepared for future automated UI reviews.
+
 ---
 
 ## Github Repository

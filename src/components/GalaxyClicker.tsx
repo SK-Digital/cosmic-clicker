@@ -87,21 +87,19 @@ const GalaxyClicker: React.FC = () => {
         className={`
           relative cursor-pointer w-full h-full rounded-full
           flex items-center justify-center
-          bg-gradient-to-br from-indigo-800/40 via-purple-900/40 to-blue-900/40
-          before:absolute before:inset-0 before:rounded-full before:bg-black/20
-          before:z-0 before:backdrop-blur-sm
+          bg-[radial-gradient(circle_at_60%_40%,rgba(120,80,255,0.25)_0%,rgba(60,30,120,0.5)_60%,rgba(20,10,40,0.9)_100%)]
+          before:absolute before:inset-0 before:rounded-full before:bg-none
+          before:z-0
           overflow-hidden
           transition-all duration-200 ease-out
           transform ${isClicking ? 'scale-95' : 'scale-100'}
           hover:scale-105 active:scale-95
-          hover:shadow-[0_0_30px_5px_rgba(139,92,246,0.5)]
-          shadow-[0_0_20px_2px_rgba(139,92,246,0.3)]
+          shadow-[0_0_60px_10px_rgba(120,80,255,0.25)]
           ${hasBlackHoleEvent ? 'animate-pulse' : ''}
         `}
         onClick={handleClick}
       >
-        <div className="absolute inset-0 opacity-50 bg-[radial-gradient(circle_at_center,rgba(79,70,229,0.8)_0%,transparent_70%)]"></div>
-        
+        <div className="absolute inset-0 opacity-40 bg-[radial-gradient(circle_at_center,rgba(120,80,255,0.5)_0%,transparent_80%)] pointer-events-none"></div>
         <Sparkles
           size={80}
           className={`

@@ -31,6 +31,14 @@
   .animate-float-up {
     animation: floatUp 500ms ease-out forwards;
   }
+
+  .animate-meteor-refined {
+    animation: meteor-refined 2.8s cubic-bezier(0.4,0.2,0.6,1) infinite;
+  }
+
+  .animate-falling-galaxy-star {
+    animation: falling-galaxy-star 8s linear infinite, twinkle 4s ease-in-out infinite;
+  }
 }
 
 @keyframes twinkle {
@@ -86,5 +94,38 @@
       calc(var(--end-y) - var(--start-y, 0px))
     ) scale(0);
     opacity: 0;
+  }
+}
+
+@keyframes meteor-refined {
+  0% {
+    transform: translateX(0) translateY(0) scale(1);
+    opacity: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(60vw) translateY(40vh) scale(0.95);
+    opacity: 0;
+  }
+}
+
+@keyframes falling-galaxy-star {
+  0% {
+    transform: translateX(0) translateY(0) scale(0.8);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+    transform: translateX(5vw) translateY(5vh) scale(1.1);
+  }
+  80% {
+    opacity: 1;
+    transform: translateX(55vw) translateY(40vh) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(60vw) translateY(45vh) scale(0.8);
   }
 }

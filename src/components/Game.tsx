@@ -10,11 +10,11 @@ const Game: React.FC = () => {
   const [showUpgrades, setShowUpgrades] = useState(false);
   
   return (
-    <div className="relative w-full h-screen flex">
+    <div className="relative w-full h-screen flex bg-transparent">
       <Background />
       
-      <main className="flex-1 flex flex-col items-center justify-center relative z-10">
-        <div className="absolute top-4 left-4 right-4 flex justify-between items-center">
+      <main className="flex-1 flex flex-col items-center justify-center relative z-20 bg-transparent">
+        <div className="absolute top-4 left-4 right-4 flex justify-between items-center bg-transparent">
           <h1 className="text-xl md:text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-blue-400 to-indigo-500">
             Cosmic Clicker
           </h1>
@@ -33,7 +33,7 @@ const Game: React.FC = () => {
           </button>
         </div>
 
-        <div className="flex items-center justify-center w-full max-w-5xl px-4 gap-8">
+        <div className="flex items-center justify-center w-full max-w-5xl px-4 gap-8 bg-transparent">
           <div className="w-1/4">
             <StardustCounter />
           </div>
@@ -46,8 +46,8 @@ const Game: React.FC = () => {
       
       <div 
         className={`
-          fixed right-0 top-0 bottom-0 z-20 w-80
-          bg-indigo-900/90 backdrop-blur-md
+          fixed right-0 top-0 bottom-0 z-30 w-80
+          bg-indigo-900/90
           transform transition-transform duration-300 ease-in-out
           ${showUpgrades ? 'translate-x-0' : 'translate-x-full'}
         `}

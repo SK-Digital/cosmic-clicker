@@ -54,7 +54,7 @@ export const generateRandomMeteors = (count: number) => {
     startY: Math.random() * 100,
     angle: Math.random() * 45 + 45,
     speed: Math.random() * 10 + 5,
-    size: Math.random() * 80 + 40,
+    size: Math.random() * 2 + 2,
     opacity: Math.random() * 0.7 + 0.3,
     delay: Math.random() * 20,
   }));

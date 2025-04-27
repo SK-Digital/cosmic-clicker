@@ -43,7 +43,7 @@ const StardustCounter: React.FC = () => {
   }, [state.stardust]);
 
   return (
-    <div className="bg-indigo-900/40 backdrop-blur-sm rounded-xl p-4 shadow-lg border border-indigo-800/50">
+    <div className="p-6 transition-all duration-300">
       <div className="space-y-4">
         {/* Stardust Counter */}
         <div className="flex items-center gap-2">
