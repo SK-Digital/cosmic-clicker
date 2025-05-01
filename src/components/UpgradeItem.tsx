@@ -1,5 +1,5 @@
 import React from 'react';
-import { Star, Cloud, Orbit } from 'lucide-react';
+import { Star, Cloud, Orbit, Rocket } from 'lucide-react';
 import { useGame } from '../context/GameContext';
 import { Upgrade } from '../context/GameContext';
 import { calculateBulkUpgradeCost, formatNumber } from '../utils/gameUtils';
@@ -35,6 +35,8 @@ const UpgradeItem: React.FC<UpgradeItemProps> = ({ upgrade, bulkAmount }) => {
         return <Cloud className="w-5 h-5" />;
       case 'orbit':
         return <Orbit className="w-5 h-5" />;
+      case 'rocket':
+        return <Rocket className="w-5 h-5 text-white" strokeWidth={2} />;
       default:
         return <Star className="w-5 h-5" />;
     }

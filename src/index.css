@@ -39,6 +39,14 @@
   .animate-falling-galaxy-star {
     animation: falling-galaxy-star 8s linear infinite, twinkle 4s ease-in-out infinite;
   }
+
+  .animate-spin-slow {
+    animation: spin 4s linear infinite;
+  }
+
+  .animate-spin-reverse {
+    animation: spin-reverse 6s linear infinite;
+  }
 }
 
 @keyframes twinkle {
@@ -127,5 +135,14 @@
   100% {
     opacity: 0;
     transform: translateX(60vw) translateY(45vh) scale(0.8);
+  }
+}
+
+@keyframes spin-reverse {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(-360deg);
   }
 }

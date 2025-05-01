@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, ReactNode } from 'react';
 import { Sparkles } from 'lucide-react';
 import { useGame } from '../context/GameContext';
 import StarParticles from './StarParticles';
@@ -11,7 +11,12 @@ interface ClickFeedbackInstance {
   value: number;
 }
 
-const GalaxyClicker: React.FC = () => {
+interface GalaxyClickerProps {
+  eventMultiplier?: number;
+  children?: ReactNode;
+}
+
+const GalaxyClicker: React.FC<GalaxyClickerProps> = ({ eventMultiplier = 1, children }) => {
   const { state, dispatch } = useGame();
   const [isClicking, setIsClicking] = useState(false);
   const [showParticles, setShowParticles] = useState(false);
@@ -41,7 +46,7 @@ const GalaxyClicker: React.FC = () => {
       id: nextFeedbackId,
       x,
       y,
-      value: state.clickPower
+      value: state.clickPower * eventMultiplier
     }]);
     setNextFeedbackId(prev => prev + 1);
     
@@ -59,7 +64,7 @@ const GalaxyClicker: React.FC = () => {
     setTimeout(() => {
       setShowParticles(false);
     }, 1000);
-  }, [dispatch, clickSound, nextFeedbackId, state.clickPower]);
+  }, [dispatch, clickSound, nextFeedbackId, state.clickPower, eventMultiplier]);
 
   const handleFeedbackComplete = useCallback((id: number) => {
     setClickFeedbacks(prev => prev.filter(feedback => feedback.id !== id));
@@ -69,6 +74,12 @@ const GalaxyClicker: React.FC = () => {
 
   return (
     <div className="relative w-48 h-48 md:w-64 md:h-64 flex items-center justify-center bg-transparent">
+      {/* Render rush event animation as background layer */}
+      {children && (
+        <div className="absolute inset-0 z-0 pointer-events-none flex items-center justify-center">
+          {children}
+        </div>
+      )}
       {showParticles && (
         <StarParticles x={particlePosition.x} y={particlePosition.y} />
       )}

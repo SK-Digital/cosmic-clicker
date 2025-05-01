@@ -3,7 +3,11 @@ import { formatNumber } from '../utils/gameUtils';
 import { useGame } from '../context/GameContext';
 import { Star, Zap } from 'lucide-react';
 
-const StardustCounter: React.FC = () => {
+interface StardustCounterProps {
+  eventMultiplier?: number;
+}
+
+const StardustCounter: React.FC<StardustCounterProps> = ({ eventMultiplier = 1 }) => {
   const { state } = useGame();
   const [displayValue, setDisplayValue] = useState(state.stardust);
   const [isIncreasing, setIsIncreasing] = useState(false);
@@ -43,7 +47,7 @@ const StardustCounter: React.FC = () => {
   }, [state.stardust]);
 
   return (
-    <div className="p-6 transition-all duration-300 bg-transparent">
+    <div className="p-6 transition-all duration-300 bg-indigo-900/40 rounded-2xl shadow-xl border border-indigo-400/30 ring-1 ring-indigo-200/10 backdrop-blur-sm">
       <div className="space-y-4">
         {/* Stardust Counter */}
         <div className="flex items-center gap-2">
@@ -63,14 +67,14 @@ const StardustCounter: React.FC = () => {
         <div className="flex items-center gap-2 text-indigo-200">
           <Zap className="w-4 h-4" />
           <div className="text-sm">
-            {formatNumber(state.passiveIncome)}/sec
+            {formatNumber(state.passiveIncome * eventMultiplier)}/sec
           </div>
         </div>
         
         {/* Click Power */}
         <div className="pt-2 space-y-2 border-t border-indigo-800/50">
           <div className="text-sm text-indigo-200">
-            Click Power: {formatNumber(state.clickPower)}
+            Click Power: {formatNumber(state.clickPower * eventMultiplier)}
           </div>
         </div>
       </div>

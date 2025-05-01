@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { MousePointer, Star, X, Stars } from 'lucide-react';
+import { MousePointer, Star, X, Stars, Rocket } from 'lucide-react';
 import { useGame } from '../context/GameContext';
 import UpgradeItem from './UpgradeItem';
 
@@ -12,6 +12,7 @@ interface TabConfig {
 const TABS: TabConfig[] = [
   { id: 'click', icon: <MousePointer className="w-5 h-5" />, tooltip: 'Click Power' },
   { id: 'passive', icon: <Stars className="w-5 h-5" />, tooltip: 'Passive Income' },
+  { id: 'event', icon: <Rocket className="w-5 h-5 text-white" strokeWidth={2} />, tooltip: 'Event Chance' },
 ];
 
 const BULK_OPTIONS = [1, 5, 10, 25];
@@ -27,6 +28,7 @@ const UpgradesPanel: React.FC<UpgradesPanelProps> = ({ onClose }) => {
   
   const clickUpgrades = Object.values(state.upgrades).filter(u => u.type === 'click');
   const passiveUpgrades = Object.values(state.upgrades).filter(u => u.type === 'passive');
+  const eventUpgrades = Object.values(state.upgrades).filter(u => u.type === 'event');
 
   const renderTabContent = () => {
     switch (activeTab) {
@@ -53,6 +55,23 @@ const UpgradesPanel: React.FC<UpgradesPanelProps> = ({ onClose }) => {
                 bulkAmount={bulkAmount}
               />
             ))}
+          </div>
+        );
+      
+      case 'event':
+        return (
+          <div className="space-y-3 p-4">
+            {eventUpgrades.length === 0 ? (
+              <div className="text-indigo-200 text-center mt-8">No event chance upgrades available yet.</div>
+            ) : (
+              eventUpgrades.map(upgrade => (
+                <UpgradeItem 
+                  key={upgrade.id} 
+                  upgrade={upgrade} 
+                  bulkAmount={bulkAmount}
+                />
+              ))
+            )}
           </div>
         );
       

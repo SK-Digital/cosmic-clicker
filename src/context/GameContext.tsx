@@ -11,7 +11,7 @@ export interface Upgrade {
   costMultiplier: number;
   effect: number;
   effectMultiplier: number;
-  type: 'click' | 'passive';
+  type: 'click' | 'passive' | 'event';
   icon: string;
 }
 
@@ -22,6 +22,8 @@ export interface GameState {
   lastSaved: number;
   lastTick: number;
   upgrades: Record<string, Upgrade>;
+  activeEvents: { id: string; name: string; duration: number; startedAt: number }[];
+  eventChance: number;
 }
 
 const initialUpgrades: Record<string, Upgrade> = {
@@ -144,7 +146,33 @@ const initialUpgrades: Record<string, Upgrade> = {
     effectMultiplier: 1.25,
     type: 'passive',
     icon: 'star',
-  }
+  },
+  eventBooster: {
+    id: 'eventBooster',
+    name: 'Event Booster',
+    description: 'Increases the chance of rush events by 2% per level.',
+    type: 'event',
+    icon: 'rocket',
+    baseCost: 1000,
+    costMultiplier: 2.5,
+    effect: 0.02,
+    effectMultiplier: 1,
+    level: 0,
+    maxLevel: 10,
+  },
+  meteorMagnet: {
+    id: 'meteorMagnet',
+    name: 'Meteor Magnet',
+    description: 'Further increases rush event chance by 3% per level.',
+    type: 'event',
+    icon: 'rocket',
+    baseCost: 5000,
+    costMultiplier: 3,
+    effect: 0.03,
+    effectMultiplier: 1,
+    level: 0,
+    maxLevel: 5,
+  },
 };
 
 const initialState: GameState = {
@@ -153,7 +181,9 @@ const initialState: GameState = {
   passiveIncome: 0,
   lastSaved: Date.now(),
   lastTick: Date.now(),
-  upgrades: initialUpgrades
+  upgrades: initialUpgrades,
+  activeEvents: [],
+  eventChance: calculateEventChance(initialUpgrades),
 };
 
 const calculatePassiveIncome = (upgrades: Record<string, Upgrade>): number => {
@@ -174,41 +204,73 @@ const calculateClickPower = (upgrades: Record<string, Upgrade>): number => {
     }, 1);
 };
 
+// Helper function to calculate event chance from upgrades
+function calculateEventChance(upgrades: Record<string, Upgrade>): number {
+  return Object.values(upgrades)
+    .filter(u => u.type === 'event')
+    .reduce((sum, u) => sum + u.effect * u.level, 0);
+}
+
+// Define rush events
+const rushEvents = [
+  {
+    id: 'meteorShower',
+    name: 'Meteor Shower',
+    baseChance: 0.7, // 70% of eventChance
+    duration: 30, // seconds
+    multiplier: 2, // 2x production
+    description: 'A flurry of meteors increases all production!',
+    icon: 'meteor',
+  },
+  {
+    id: 'blackHoleRift',
+    name: 'Black Hole Rift',
+    baseChance: 0.3, // 30% of eventChance
+    duration: 30, // seconds
+    multiplier: 4, // 4x production
+    description: 'A black hole rift supercharges your stardust gain!',
+    icon: 'blackhole',
+  },
+];
+
+// Helper to get current event multiplier
+function getActiveEventMultiplier(activeEvents: { id: string; name: string; duration: number; startedAt: number }[]): number {
+  if (!activeEvents || activeEvents.length === 0) return 1;
+  return activeEvents.reduce((mult: number, event: { id: string; name: string; duration: number; startedAt: number }) => {
+    const def = rushEvents.find(e => e.id === event.id);
+    return mult * (def ? def.multiplier : 1);
+  }, 1);
+}
+
 type GameAction =
   | { type: 'CLICK' }
   | { type: 'ADD_STARDUST'; amount: number }
   | { type: 'BUY_UPGRADE'; upgradeId: string }
   | { type: 'TICK' }
-  | { type: 'LOAD_GAME'; state: GameState };
+  | { type: 'LOAD_GAME'; state: GameState }
+  | { type: 'START_EVENT'; event: { id: string; name: string; duration: number; startedAt: number } }
+  | { type: 'END_EVENT'; eventId: string; startedAt: number };
 
 const gameReducer = (state: GameState, action: GameAction): GameState => {
   switch (action.type) {
     case 'CLICK': {
-      const newState = {
+      const eventMultiplier = getActiveEventMultiplier(state.activeEvents);
+      return {
         ...state,
-        stardust: state.stardust + state.clickPower,
+        stardust: state.stardust + state.clickPower * eventMultiplier,
       };
-      
-      localStorage.setItem('cosmicClickerGameState', JSON.stringify(newState));
-      return newState;
     }
-    
     case 'ADD_STARDUST': {
-      const newState = {
+      return {
         ...state,
         stardust: state.stardust + action.amount,
       };
-      localStorage.setItem('cosmicClickerGameState', JSON.stringify(newState));
-      return newState;
     }
-    
     case 'BUY_UPGRADE': {
       const upgrade = state.upgrades[action.upgradeId];
       if (!upgrade) return state;
-      
       const cost = calculateUpgradeCost(upgrade);
       if (state.stardust < cost) return state;
-      
       const newUpgrades = {
         ...state.upgrades,
         [action.upgradeId]: {
@@ -216,49 +278,59 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
           level: upgrade.level + 1,
         },
       };
-
-      const newState = {
+      return {
         ...state,
         stardust: state.stardust - cost,
         clickPower: calculateClickPower(newUpgrades),
         passiveIncome: calculatePassiveIncome(newUpgrades),
         upgrades: newUpgrades,
         lastSaved: Date.now(),
+        eventChance: calculateEventChance(newUpgrades),
       };
-      
-      localStorage.setItem('cosmicClickerGameState', JSON.stringify(newState));
-      return newState;
     }
-    
     case 'TICK': {
+      const eventMultiplier = getActiveEventMultiplier(state.activeEvents);
       const now = Date.now();
       const deltaTime = (now - state.lastTick) / 1000;
-      const passiveGain = state.passiveIncome * deltaTime;
-      
+      const passiveGain = state.passiveIncome * eventMultiplier * deltaTime;
       const newState = {
         ...state,
         stardust: state.stardust + passiveGain,
         lastTick: now,
       };
-      
-      if (now - state.lastSaved > 10000) {
-        localStorage.setItem('cosmicClickerGameState', JSON.stringify(newState));
-      }
-      
+      // Check for expired events
+      newState.activeEvents.forEach(event => {
+        if (event.startedAt + event.duration * 1000 < now) {
+          newState.activeEvents = newState.activeEvents.filter(e => e.id !== event.id);
+        }
+      });
       return newState;
     }
-    
     case 'LOAD_GAME': {
-      const newState = {
+      return {
         ...action.state,
         clickPower: calculateClickPower(action.state.upgrades),
         passiveIncome: calculatePassiveIncome(action.state.upgrades),
         lastTick: Date.now(),
         lastSaved: Date.now(),
+        eventChance: calculateEventChance(action.state.upgrades),
       };
-      return newState;
     }
-    
+    case 'START_EVENT': {
+      return {
+        ...state,
+        activeEvents: [...state.activeEvents, action.event],
+        lastSaved: Date.now(),
+      };
+    }
+    case 'END_EVENT': {
+      const newActiveEvents = state.activeEvents.filter(event => !(event.id === action.eventId && event.startedAt === action.startedAt));
+      return {
+        ...state,
+        activeEvents: newActiveEvents,
+        lastSaved: Date.now(),
+      };
+    }
     default:
       return state;
   }
@@ -288,10 +360,16 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     const tickInterval = setInterval(() => {
       dispatch({ type: 'TICK' });
+      // Check for expired events
+      const now = Date.now();
+      state.activeEvents.forEach(event => {
+        if (event.startedAt + event.duration * 1000 < now) {
+          dispatch({ type: 'END_EVENT', eventId: event.id, startedAt: event.startedAt });
+        }
+      });
     }, 100);
-    
     return () => clearInterval(tickInterval);
-  }, []);
+  }, [state.activeEvents]);
   
   useEffect(() => {
     const now = Date.now();
@@ -304,6 +382,35 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     }
   }, [state.lastSaved, state.passiveIncome]);
+  
+  // Periodically check for rush event trigger
+  useEffect(() => {
+    if (state.activeEvents.length > 0) return; // Only one event at a time
+    const interval = setInterval(() => {
+      if (state.activeEvents.length > 0) return;
+      if (state.eventChance > 0 && Math.random() < state.eventChance) {
+        // Weighted random event selection
+        const totalWeight = rushEvents.reduce((sum, e) => sum + e.baseChance, 0);
+        let r = Math.random() * totalWeight;
+        let chosen = rushEvents[0];
+        for (const event of rushEvents) {
+          if (r < event.baseChance) {
+            chosen = event;
+            break;
+          }
+          r -= event.baseChance;
+        }
+        const event = {
+          id: chosen.id,
+          name: chosen.name,
+          duration: chosen.duration,
+          startedAt: Date.now(),
+        };
+        dispatch({ type: 'START_EVENT', event });
+      }
+    }, 15000); // Check every 15 seconds
+    return () => clearInterval(interval);
+  }, [state.eventChance, state.activeEvents.length]);
   
   return (
     <GameContext.Provider value={{ state, dispatch }}>
@@ -319,3 +426,5 @@ export const useGame = () => {
   }
   return context;
 };
+
+export { rushEvents, getActiveEventMultiplier };
