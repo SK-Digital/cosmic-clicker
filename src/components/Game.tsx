@@ -9,16 +9,64 @@ import { Store, Rocket } from 'lucide-react';
 import RushEventsPanel from './RushEventsPanel';
 import RushEventAnimation from './RushEventAnimation';
 import { getActiveEventMultiplier } from '../context/GameContext';
+import AchievementsPanel from './AchievementsPanel';
+import AchievementToast from './AchievementToast';
+import { achievementDefs } from './AchievementsPanel';
 
 const Game: React.FC = () => {
   const [showUpgrades, setShowUpgrades] = useState(false);
   const [showRushEvents, setShowRushEvents] = useState(false);
+  const [showAchievements, setShowAchievements] = useState(false);
   const { dispatch, state } = useGame();
   const activeEvent = state.activeEvents.length > 0 ? state.activeEvents[0] : null;
   const eventMultiplier = getActiveEventMultiplier(state.activeEvents);
   
+  // --- Achievement Toast Logic ---
+  const [toasts, setToasts] = useState<{ id: string }[]>([]);
+  const prevAchievementsRef = React.useRef(state.achievements);
+  React.useEffect(() => {
+    const prev = prevAchievementsRef.current;
+    const newToasts: { id: string }[] = [];
+    for (const id in state.achievements) {
+      if (
+        state.achievements[id].unlocked &&
+        (!prev[id]?.unlocked)
+      ) {
+        newToasts.push({ id });
+      }
+    }
+    if (newToasts.length > 0) {
+      setToasts((old) => [...old, ...newToasts]);
+    }
+    prevAchievementsRef.current = state.achievements;
+  }, [state.achievements]);
+
+  React.useEffect(() => {
+    if (toasts.length === 0) return;
+    const timer = setTimeout(() => {
+      setToasts((old) => old.slice(1));
+    }, 3500);
+    return () => clearTimeout(timer);
+  }, [toasts]);
+  // --- End Achievement Toast Logic ---
+
   return (
     <div className="relative w-full h-screen flex bg-transparent">
+      {/* Toast notification container */}
+      <div className="fixed top-6 right-6 z-50 flex flex-col gap-4 items-end pointer-events-none">
+        {toasts.map(({ id }) => {
+          const def = achievementDefs.find((a) => a.id === id);
+          if (!def) return null;
+          return (
+            <AchievementToast
+              key={id}
+              icon={def.icon}
+              name={def.name}
+              description={def.description}
+            />
+          );
+        })}
+      </div>
       <Background />
       {/* Meteor Shower as full-screen overlay */}
       {activeEvent && activeEvent.id === 'meteorShower' && (
@@ -51,28 +99,19 @@ const Game: React.FC = () => {
             >
               <Store className="w-6 h-6" />
             </button>
-            {import.meta.env.DEV && state.activeEvents.length === 0 && (
-              <div className="flex gap-1">
-                <button
-                  className="p-2 rounded bg-indigo-700 text-white text-xs hover:bg-indigo-600"
-                  onClick={() => dispatch({ type: 'START_EVENT', event: { id: 'meteorShower', name: 'Meteor Shower', duration: 30, startedAt: Date.now() } })}
-                >
-                  Trigger Meteor Shower
-                </button>
-                <button
-                  className="p-2 rounded bg-indigo-700 text-white text-xs hover:bg-indigo-600"
-                  onClick={() => dispatch({ type: 'START_EVENT', event: { id: 'meteorShower', name: 'Meteor Shower', duration: 3, startedAt: Date.now() } })}
-                >
-                  Trigger Short Meteor Shower
-                </button>
-                <button
-                  className="p-2 rounded bg-indigo-700 text-white text-xs hover:bg-indigo-600"
-                  onClick={() => dispatch({ type: 'START_EVENT', event: { id: 'blackHoleRift', name: 'Black Hole Rift', duration: 30, startedAt: Date.now() } })}
-                >
-                  Trigger Black Hole Rift
-                </button>
-              </div>
-            )}
+            <button
+              onClick={() => setShowAchievements(true)}
+              className="p-3 rounded-full bg-indigo-900/60 hover:bg-indigo-800/80 text-white transition-colors"
+            >
+              <svg width="24" height="24" viewBox="0 0 48 48" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="12" y="8" width="24" height="16" rx="4" />
+                <path d="M16 8V4h16v4" />
+                <path d="M24 24v8" />
+                <circle cx="24" cy="40" r="4" />
+                <path d="M12 12c-4 0-4 8 0 8" />
+                <path d="M36 12c4 0 4 8 0 8" />
+              </svg>
+            </button>
           </div>
         </div>
 
@@ -118,6 +157,12 @@ const Game: React.FC = () => {
       >
         <RushEventsPanel onClose={() => setShowRushEvents(false)} />
       </div>
+
+      {showAchievements && (
+        <div className="fixed right-0 top-0 bottom-0 z-40 w-96 max-w-full">
+          <AchievementsPanel onClose={() => setShowAchievements(false)} />
+        </div>
+      )}
     </div>
   );
 };

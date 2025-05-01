@@ -47,6 +47,10 @@
   .animate-spin-reverse {
     animation: spin-reverse 6s linear infinite;
   }
+
+  .animate-toast-in {
+    animation: toast-in 0.7s cubic-bezier(0.23, 1, 0.32, 1);
+  }
 }
 
 @keyframes twinkle {
@@ -144,5 +148,23 @@
   }
   100% {
     transform: rotate(-360deg);
+  }
+}
+
+@keyframes toast-in {
+  0% {
+    opacity: 0;
+    transform: translateX(120%);
+  }
+  60% {
+    opacity: 1;
+    transform: translateX(-8px);
+  }
+  80% {
+    transform: translateX(0);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
   }
 }

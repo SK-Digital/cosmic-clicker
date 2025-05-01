@@ -21,7 +21,7 @@ const GalaxyClicker: React.FC<GalaxyClickerProps> = ({ eventMultiplier = 1, chil
   const [isClicking, setIsClicking] = useState(false);
   const [showParticles, setShowParticles] = useState(false);
   const [particlePosition, setParticlePosition] = useState({ x: 0, y: 0 });
-  const [clickSound] = useState(() => new Audio('/click-sound.mp3'));
+  const [clickSound] = useState(() => new Audio('/audio/click.mp3'));
   const [clickFeedbacks, setClickFeedbacks] = useState<ClickFeedbackInstance[]>([]);
   const [nextFeedbackId, setNextFeedbackId] = useState(0);
   

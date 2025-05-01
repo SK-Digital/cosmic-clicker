@@ -1,0 +1,22 @@
+# Cosmic Clicker Cursor Rules
+
+PHASE_COMPLETION:
+- Each phase or major feature must be fully tested and meet the criteria in clicker_phases.md before starting the next phase.
+
+VERSION_CONTROL:
+- All changes must be committed and pushed to GitHub after each phase or major feature is completed and tested.
+
+DOCUMENTATION:
+- clicker_phases.md and roadmap.md must be referenced and updated as features are completed, tested, or changed.
+
+DESIGN_PRINCIPLES:
+- All code and UI must follow the clicker game design principles outlined in clicker_phases.md (clarity, feedback, progression, reward loops, accessibility, minimal friction, and thorough testing).
+
+TESTING:
+- Both automated (E2E, unit) and manual testing must be performed for all new features and phases. No feature is considered complete until it passes all relevant tests.
+
+CONTINUOUS_IMPROVEMENT:
+- Regularly review and refine the plan, roadmap, and design principles to ensure the game remains fun, accessible, and polished.
+
+MANDATORY:
+- These rules are mandatory for all contributors and must be followed throughout the development of Cosmic Clicker. 

@@ -33,15 +33,16 @@ Cosmic Clicker is a clicker/idle game where players collect stardust by clicking
 - [ ] **Display event chance**: Show the current chance for a rush event to occur next to the stardust counter/clicker
 
 ### 3. Upgrades Expansion
-- [ ] **Event Chance Upgrades**: New upgrades with a max level that increase the chance of rush events
-- [ ] **Upgrade diversity**: Add more upgrade types (e.g., event duration, event multiplier, achievement boosts)
-- [ ] **Upgrade UI**: Show max level, effects, and lock upgrades when maxed
+- [ ] **Increase upgrade variety:** Add more upgrades to each tab (click, passive, event) and diversify their effects (e.g., multipliers, automation, special bonuses).
+- [ ] **Upgrade UI:** Show max level, effects, and lock upgrades when maxed.
 
 ### 4. Progression & Features
-- [ ] **Achievements system**: Track and reward milestones (e.g., total clicks, stardust earned, upgrades bought)
-- [ ] **Sound effects & music**: Add background music, more sound effects, and a mute option
-- [ ] **Settings menu**: Allow toggling music, sound, and visual effects
-- [ ] **Save/load improvements**: Ensure all new features are saved and loaded correctly
+- [ ] **Prestige/Rebirth system:** Allow players to reset for permanent bonuses and meta-progression.
+- [ ] **Achievements system:** Track and reward milestones (e.g., total clicks, stardust earned, upgrades bought).
+- [ ] **Lifetime stats box:** Display all-time stats and records for the player.
+- [ ] **Sound effects & music:** Add clicker and purchase sounds, with volume control via a settings menu and a themed slider bar.
+- [ ] **Settings menu:** Allow toggling music, sound, and visual effects.
+- [ ] **Feature expansion:** Add more features typical of advanced clicker games (e.g., meta-upgrades, visual polish, new event types, etc.).
 
 ## Milestones
 

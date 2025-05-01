@@ -23,10 +23,11 @@
     - StatsPanel.tsx — Game stats and upgrade levels
     - UpgradeItem.tsx — Single upgrade display
     - UpgradesPanel.tsx — Upgrades tab/panel
+    - AchievementsPanel.tsx
   - context/
     - GameContext.tsx — Game state, upgrades, events
   - utils/
-    - (gameUtils and other helpers)
+    - gameUtils.ts
 - index.html — Main HTML entry
 - package.json — Project dependencies
 - package-lock.json — Dependency lockfile
@@ -80,6 +81,7 @@ Update this file whenever the file structure or major project details change.
     - UpgradeItem.tsx
     - UpgradesPanel.tsx
     - Game.tsx
+    - AchievementsPanel.tsx
   - context/
   - index.css         # Contains animation keyframes and utility classes
   - main.tsx
@@ -116,6 +118,11 @@ Update this file whenever the file structure or major project details change.
 - Improved meteor rush event animation in src/components/RushEventAnimation.tsx: meteors are now more visible, animate smoothly, and the animation is properly cleaned up when the event ends.
 - The BlackHole rush event animation in `RushEventAnimation.tsx` is now centered in the right 75% of the screen (using a wrapper with marginLeft: 25vw and width: 75vw) to avoid overlapping the stat/currency box on the left.
 - All rush event animations are now visually impressive, cosmic-feeling, and strictly tied to the event lifecycle for performance and polish.
+- **AchievementsPanel.tsx** now uses the achievements state from GameContext, so progress bars and unlocks reflect actual game state, not a static list.
+- **GameContext.tsx**:
+  - Added `totalClicks` to `GameState` and initialState.
+  - The reducer now increments `totalClicks` on every click and uses it for the 'hundred-clicks' achievement progress.
+  - On LOAD_GAME, `totalClicks` is loaded (or set to 0 if missing) and used to recalculate achievement progress.
 
 ## File Structure (key files)
 - src/components/RushEventAnimation.tsx: Handles rush event animations (meteor shower, black hole rift). Now includes .rush-meteor and .rush-blackhole wrappers for testability.
@@ -125,3 +132,12 @@ Update this file whenever the file structure or major project details change.
 ## Notes
 - `.rush-meteor` (MeteorShower) and `.rush-blackhole` (BlackHole) wrappers are required for E2E tests to detect and verify animation overlays.
 - Animation logic and cleanup are handled in RushEventAnimation.tsx; parent unmounts on onComplete.
+
+## Achievements System
+- Achievements are tracked in `state.achievements`.
+- Progress bars and unlocks in the UI are now always in sync with the actual game state.
+- The 'hundred-clicks' achievement is based on `totalClicks` and persists across reloads.
+
+## Outstanding/Next Steps
+- Ensure all achievements are tracked and displayed correctly as new ones are added.
+- Continue to follow clicker_phases.md and roadmap.md for next features and testing.

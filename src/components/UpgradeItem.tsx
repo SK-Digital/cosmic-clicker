@@ -11,6 +11,10 @@ interface UpgradeItemProps {
 
 const UpgradeItem: React.FC<UpgradeItemProps> = ({ upgrade, bulkAmount }) => {
   const { state, dispatch } = useGame();
+  const purchaseSound = React.useRef<HTMLAudioElement | null>(null);
+  React.useEffect(() => {
+    purchaseSound.current = new Audio('/audio/purchase.mp3');
+  }, []);
   
   const effectiveBulkAmount = upgrade.maxLevel 
     ? Math.min(bulkAmount, upgrade.maxLevel - upgrade.level)
@@ -23,6 +27,10 @@ const UpgradeItem: React.FC<UpgradeItemProps> = ({ upgrade, bulkAmount }) => {
     if (canAfford) {
       for (let i = 0; i < effectiveBulkAmount; i++) {
         dispatch({ type: 'BUY_UPGRADE', upgradeId: upgrade.id });
+      }
+      if (purchaseSound.current) {
+        purchaseSound.current.currentTime = 0;
+        purchaseSound.current.play().catch(() => {});
       }
     }
   };
@@ -44,11 +52,17 @@ const UpgradeItem: React.FC<UpgradeItemProps> = ({ upgrade, bulkAmount }) => {
 
   const getCurrentEffect = () => {
     if (upgrade.level === 0) return 0;
+    if (upgrade.type === 'event') {
+      return upgrade.effect * upgrade.level * 100; // percent
+    }
     return upgrade.effect * Math.pow(upgrade.effectMultiplier, upgrade.level - 1) * upgrade.level;
   };
 
   const getNextEffect = () => {
     const nextLevel = upgrade.level + effectiveBulkAmount;
+    if (upgrade.type === 'event') {
+      return upgrade.effect * nextLevel * 100; // percent
+    }
     return upgrade.effect * Math.pow(upgrade.effectMultiplier, nextLevel - 1) * nextLevel;
   };
 
@@ -89,10 +103,17 @@ const UpgradeItem: React.FC<UpgradeItemProps> = ({ upgrade, bulkAmount }) => {
           
           <div className="space-y-1.5">
             <p className="text-base text-indigo-200">
-              Current: +{formatNumber(getCurrentEffect())} {upgrade.type === 'click' ? 'per click' : 'stardust/sec'}
-            </p>
-            <p className="text-base text-indigo-300">
-              After {effectiveBulkAmount}x: +{formatNumber(getNextEffect())} {upgrade.type === 'click' ? 'per click' : 'stardust/sec'}
+              {upgrade.type === 'event' ? (
+                <>
+                  Current: +{getCurrentEffect().toFixed(2)}% event chance<br />
+                  After {effectiveBulkAmount}x: +{getNextEffect().toFixed(2)}% event chance
+                </>
+              ) : (
+                <>
+                  Current: +{getCurrentEffect().toFixed(2)} stardust/sec<br />
+                  After {effectiveBulkAmount}x: +{getNextEffect().toFixed(2)} stardust/sec
+                </>
+              )}
             </p>
             
             <div className="flex justify-between items-center mt-2 pt-2 border-t border-indigo-800/30">

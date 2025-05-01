@@ -15,6 +15,12 @@ export interface Upgrade {
   icon: string;
 }
 
+export interface AchievementState {
+  id: string;
+  unlocked: boolean;
+  progress?: number;
+}
+
 export interface GameState {
   stardust: number;
   clickPower: number;
@@ -24,6 +30,8 @@ export interface GameState {
   upgrades: Record<string, Upgrade>;
   activeEvents: { id: string; name: string; duration: number; startedAt: number }[];
   eventChance: number;
+  achievements: Record<string, AchievementState>;
+  totalClicks: number;
 }
 
 const initialUpgrades: Record<string, Upgrade> = {
@@ -175,6 +183,13 @@ const initialUpgrades: Record<string, Upgrade> = {
   },
 };
 
+const initialAchievements: Record<string, AchievementState> = {
+  'first-click': { id: 'first-click', unlocked: false },
+  'hundred-clicks': { id: 'hundred-clicks', unlocked: false, progress: 0 },
+  'meteor-event': { id: 'meteor-event', unlocked: false },
+  'blackhole-event': { id: 'blackhole-event', unlocked: false },
+};
+
 const initialState: GameState = {
   stardust: 0,
   clickPower: 1,
@@ -184,6 +199,8 @@ const initialState: GameState = {
   upgrades: initialUpgrades,
   activeEvents: [],
   eventChance: calculateEventChance(initialUpgrades),
+  achievements: initialAchievements,
+  totalClicks: 0,
 };
 
 const calculatePassiveIncome = (upgrades: Record<string, Upgrade>): number => {
@@ -249,15 +266,31 @@ type GameAction =
   | { type: 'TICK' }
   | { type: 'LOAD_GAME'; state: GameState }
   | { type: 'START_EVENT'; event: { id: string; name: string; duration: number; startedAt: number } }
-  | { type: 'END_EVENT'; eventId: string; startedAt: number };
+  | { type: 'END_EVENT'; eventId: string; startedAt: number }
+  | { type: 'ACHIEVEMENT_PROGRESS'; id: string; progress?: number; unlock?: boolean };
 
 const gameReducer = (state: GameState, action: GameAction): GameState => {
   switch (action.type) {
     case 'CLICK': {
       const eventMultiplier = getActiveEventMultiplier(state.activeEvents);
+      const achievements = { ...state.achievements };
+      const newTotalClicks = (state.totalClicks || 0) + 1;
+      if (!achievements['first-click'].unlocked) {
+        achievements['first-click'] = { ...achievements['first-click'], unlocked: true };
+      }
+      if (!achievements['hundred-clicks'].unlocked) {
+        const progress = newTotalClicks;
+        if (progress >= 100) {
+          achievements['hundred-clicks'] = { ...achievements['hundred-clicks'], unlocked: true, progress: 100 };
+        } else {
+          achievements['hundred-clicks'] = { ...achievements['hundred-clicks'], progress };
+        }
+      }
       return {
         ...state,
         stardust: state.stardust + state.clickPower * eventMultiplier,
+        achievements,
+        totalClicks: newTotalClicks,
       };
     }
     case 'ADD_STARDUST': {
@@ -307,6 +340,18 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       return newState;
     }
     case 'LOAD_GAME': {
+      // If loading from old save, fallback to 0 for totalClicks
+      const totalClicks = (action.state as any).totalClicks ?? 0;
+      // Recalculate achievement progress from totalClicks
+      const achievements = { ...action.state.achievements };
+      if (achievements['hundred-clicks']) {
+        const progress = totalClicks;
+        if (progress >= 100) {
+          achievements['hundred-clicks'] = { ...achievements['hundred-clicks'], unlocked: true, progress: 100 };
+        } else {
+          achievements['hundred-clicks'] = { ...achievements['hundred-clicks'], progress };
+        }
+      }
       return {
         ...action.state,
         clickPower: calculateClickPower(action.state.upgrades),
@@ -314,13 +359,23 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         lastTick: Date.now(),
         lastSaved: Date.now(),
         eventChance: calculateEventChance(action.state.upgrades),
+        totalClicks,
+        achievements,
       };
     }
     case 'START_EVENT': {
+      const achievements = { ...state.achievements };
+      if (action.event.id === 'meteorShower' && !achievements['meteor-event'].unlocked) {
+        achievements['meteor-event'] = { ...achievements['meteor-event'], unlocked: true };
+      }
+      if (action.event.id === 'blackHoleRift' && !achievements['blackhole-event'].unlocked) {
+        achievements['blackhole-event'] = { ...achievements['blackhole-event'], unlocked: true };
+      }
       return {
         ...state,
         activeEvents: [...state.activeEvents, action.event],
         lastSaved: Date.now(),
+        achievements,
       };
     }
     case 'END_EVENT': {
@@ -330,6 +385,15 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         activeEvents: newActiveEvents,
         lastSaved: Date.now(),
       };
+    }
+    case 'ACHIEVEMENT_PROGRESS': {
+      const achievements = { ...state.achievements };
+      if (action.unlock) {
+        achievements[action.id] = { ...achievements[action.id], unlocked: true };
+      } else if (typeof action.progress === 'number') {
+        achievements[action.id] = { ...achievements[action.id], progress: action.progress };
+      }
+      return { ...state, achievements };
     }
     default:
       return state;
