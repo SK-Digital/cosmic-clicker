@@ -32,6 +32,8 @@ export interface GameState {
   eventChance: number;
   achievements: Record<string, AchievementState>;
   totalClicks: number;
+  totalUpgradesBought: number;
+  totalEventsTriggered: number;
 }
 
 const initialUpgrades: Record<string, Upgrade> = {
@@ -201,6 +203,8 @@ const initialState: GameState = {
   eventChance: calculateEventChance(initialUpgrades),
   achievements: initialAchievements,
   totalClicks: 0,
+  totalUpgradesBought: 0,
+  totalEventsTriggered: 0,
 };
 
 const calculatePassiveIncome = (upgrades: Record<string, Upgrade>): number => {
@@ -319,6 +323,7 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         upgrades: newUpgrades,
         lastSaved: Date.now(),
         eventChance: calculateEventChance(newUpgrades),
+        totalUpgradesBought: (state.totalUpgradesBought || 0) + 1,
       };
     }
     case 'TICK': {
@@ -342,6 +347,8 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
     case 'LOAD_GAME': {
       // If loading from old save, fallback to 0 for totalClicks
       const totalClicks = (action.state as any).totalClicks ?? 0;
+      const totalUpgradesBought = (action.state as any).totalUpgradesBought ?? 0;
+      const totalEventsTriggered = (action.state as any).totalEventsTriggered ?? 0;
       // Recalculate achievement progress from totalClicks
       const achievements = { ...action.state.achievements };
       if (achievements['hundred-clicks']) {
@@ -360,6 +367,8 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         lastSaved: Date.now(),
         eventChance: calculateEventChance(action.state.upgrades),
         totalClicks,
+        totalUpgradesBought,
+        totalEventsTriggered,
         achievements,
       };
     }
@@ -376,6 +385,7 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         activeEvents: [...state.activeEvents, action.event],
         lastSaved: Date.now(),
         achievements,
+        totalEventsTriggered: (state.totalEventsTriggered || 0) + 1,
       };
     }
     case 'END_EVENT': {

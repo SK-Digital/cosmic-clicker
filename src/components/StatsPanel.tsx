@@ -24,6 +24,33 @@ const StatsPanel: React.FC = () => {
       
       <div className="overflow-y-auto flex-1">
         <div className="space-y-4">
+          {/* Lifetime Stats */}
+          <div className="bg-indigo-900/70 p-3 rounded-lg border border-indigo-700/40">
+            <h3 className="text-base font-bold text-white mb-2">Lifetime Stats</h3>
+            <div className="space-y-2">
+              <div className="flex justify-between">
+                <span className="text-white/80">Total Clicks:</span>
+                <span className="font-medium text-indigo-300">{state.totalClicks}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-white/80">Total Upgrades Bought:</span>
+                <span className="font-medium text-indigo-300">{state.totalUpgradesBought}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-white/80">Total Events Triggered:</span>
+                <span className="font-medium text-indigo-300">{state.totalEventsTriggered}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-white/80">Total Stardust Earned:</span>
+                <span className="font-medium text-indigo-300">{formatNumber(totalStardust)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-white/80">Stardust Spent:</span>
+                <span className="font-medium text-indigo-300">{formatNumber(totalSpent)}</span>
+              </div>
+            </div>
+          </div>
+          
           <div className="bg-indigo-900/50 p-3 rounded-lg">
             <h3 className="text-base font-medium text-white mb-2">Resources</h3>
             <div className="space-y-2">

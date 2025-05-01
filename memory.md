@@ -123,6 +123,13 @@ Update this file whenever the file structure or major project details change.
   - Added `totalClicks` to `GameState` and initialState.
   - The reducer now increments `totalClicks` on every click and uses it for the 'hundred-clicks' achievement progress.
   - On LOAD_GAME, `totalClicks` is loaded (or set to 0 if missing) and used to recalculate achievement progress.
+  - Added `totalUpgradesBought` and `totalEventsTriggered` to `GameState` and initialState.
+  - `totalUpgradesBought` increments on every upgrade purchase.
+  - `totalEventsTriggered` increments on every rush event start.
+  - Both stats persist and are loaded from save.
+- **StatsPanel.tsx**:
+  - Added a new "Lifetime Stats" section at the top.
+  - Displays: Total Clicks, Total Upgrades Bought, Total Events Triggered, Total Stardust Earned, Stardust Spent.
 
 ## File Structure (key files)
 - src/components/RushEventAnimation.tsx: Handles rush event animations (meteor shower, black hole rift). Now includes .rush-meteor and .rush-blackhole wrappers for testability.
@@ -138,6 +145,10 @@ Update this file whenever the file structure or major project details change.
 - Progress bars and unlocks in the UI are now always in sync with the actual game state.
 - The 'hundred-clicks' achievement is based on `totalClicks` and persists across reloads.
 
+## Lifetime Stats System
+- Lifetime stats are now tracked and displayed for player progression and future achievements/prestige features.
+
 ## Outstanding/Next Steps
 - Ensure all achievements are tracked and displayed correctly as new ones are added.
-- Continue to follow clicker_phases.md and roadmap.md for next features and testing.
+- Continue to follow clicker_phases.md and roadmap.md for next features (prestige, sound/settings, etc.).
+- Consider renaming StatsPanel to LifetimeStatsPanel for clarity as the stats system expands.

@@ -12,11 +12,14 @@ import { getActiveEventMultiplier } from '../context/GameContext';
 import AchievementsPanel from './AchievementsPanel';
 import AchievementToast from './AchievementToast';
 import { achievementDefs } from './AchievementsPanel';
+import LifetimeStatsPanel from './LifetimeStatsPanel';
+import { BarChart3 } from 'lucide-react';
 
 const Game: React.FC = () => {
   const [showUpgrades, setShowUpgrades] = useState(false);
   const [showRushEvents, setShowRushEvents] = useState(false);
   const [showAchievements, setShowAchievements] = useState(false);
+  const [showStats, setShowStats] = useState(false);
   const { dispatch, state } = useGame();
   const activeEvent = state.activeEvents.length > 0 ? state.activeEvents[0] : null;
   const eventMultiplier = getActiveEventMultiplier(state.activeEvents);
@@ -81,37 +84,64 @@ const Game: React.FC = () => {
             Cosmic Clicker
           </h1>
           <div className="flex gap-2">
-            <button 
-              onClick={() => setShowRushEvents(!showRushEvents)}
-              className={`p-3 rounded-full bg-indigo-900/60 hover:bg-indigo-800/80 text-white transition-colors`}
-            >
-              <Rocket className="w-6 h-6 text-white" strokeWidth={2} />
-            </button>
-            <button 
-              onClick={() => setShowUpgrades(!showUpgrades)}
-              className={`
-                p-3 rounded-full 
-                ${showUpgrades 
-                  ? 'bg-indigo-700 text-white' 
-                  : 'bg-indigo-900/60 hover:bg-indigo-800/80'} 
-                transition-colors
-              `}
-            >
-              <Store className="w-6 h-6" />
-            </button>
-            <button
-              onClick={() => setShowAchievements(true)}
-              className="p-3 rounded-full bg-indigo-900/60 hover:bg-indigo-800/80 text-white transition-colors"
-            >
-              <svg width="24" height="24" viewBox="0 0 48 48" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="12" y="8" width="24" height="16" rx="4" />
-                <path d="M16 8V4h16v4" />
-                <path d="M24 24v8" />
-                <circle cx="24" cy="40" r="4" />
-                <path d="M12 12c-4 0-4 8 0 8" />
-                <path d="M36 12c4 0 4 8 0 8" />
-              </svg>
-            </button>
+            <div className="relative group">
+              <button 
+                onClick={() => setShowRushEvents(!showRushEvents)}
+                className={`p-3 rounded-full bg-indigo-900/60 hover:bg-indigo-800/80 text-white transition-colors`}
+              >
+                <Rocket className="w-6 h-6 text-white" strokeWidth={2} />
+              </button>
+              <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-2 py-1 bg-indigo-900/95 rounded text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity z-50">
+                Rush Events
+              </div>
+            </div>
+            <div className="relative group">
+              <button 
+                onClick={() => setShowUpgrades(!showUpgrades)}
+                className={`
+                  p-3 rounded-full 
+                  ${showUpgrades 
+                    ? 'bg-indigo-700 text-white' 
+                    : 'bg-indigo-900/60 hover:bg-indigo-800/80'} 
+                  transition-colors
+                `}
+              >
+                <Store className="w-6 h-6" />
+              </button>
+              <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-2 py-1 bg-indigo-900/95 rounded text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity z-50">
+                Upgrades
+              </div>
+            </div>
+            <div className="relative group">
+              <button
+                onClick={() => setShowAchievements(true)}
+                className="p-3 rounded-full bg-indigo-900/60 hover:bg-indigo-800/80 text-white transition-colors"
+              >
+                <svg width="24" height="24" viewBox="0 0 48 48" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="12" y="8" width="24" height="16" rx="4" />
+                  <path d="M16 8V4h16v4" />
+                  <path d="M24 24v8" />
+                  <circle cx="24" cy="40" r="4" />
+                  <path d="M12 12c-4 0-4 8 0 8" />
+                  <path d="M36 12c4 0 4 8 0 8" />
+                </svg>
+              </button>
+              <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-2 py-1 bg-indigo-900/95 rounded text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity z-50">
+                Achievements
+              </div>
+            </div>
+            <div className="relative group">
+              <button
+                onClick={() => setShowStats(true)}
+                className="p-3 rounded-full bg-indigo-900/60 hover:bg-indigo-800/80 text-white transition-colors"
+                title="Lifetime Stats"
+              >
+                <BarChart3 className="w-6 h-6" />
+              </button>
+              <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-2 py-1 bg-indigo-900/95 rounded text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity z-50">
+                Lifetime Stats
+              </div>
+            </div>
           </div>
         </div>
 
@@ -161,6 +191,11 @@ const Game: React.FC = () => {
       {showAchievements && (
         <div className="fixed right-0 top-0 bottom-0 z-40 w-96 max-w-full">
           <AchievementsPanel onClose={() => setShowAchievements(false)} />
+        </div>
+      )}
+      {showStats && (
+        <div className="fixed right-0 top-0 bottom-0 z-40 w-96 max-w-full">
+          <LifetimeStatsPanel onClose={() => setShowStats(false)} />
         </div>
       )}
     </div>
