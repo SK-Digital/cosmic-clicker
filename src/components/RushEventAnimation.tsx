@@ -1,22 +1,26 @@
 import React, { useEffect, useRef } from 'react';
+import { Sparkles } from 'lucide-react';
 
 interface RushEventAnimationProps {
   event: { id: string; name: string; duration: number; startedAt: number };
-  onComplete: () => void;
+  onComplete?: () => void;
+  localCenter?: boolean;
+  backgroundLayer?: boolean;
 }
 
 // --- Meteor Shower Animation ---
 const METEOR_COLORS = [
-  'rgba(255,255,255,0.95)', // white
-  'rgba(255,180,80,0.95)',  // orange
-  'rgba(120,180,255,0.95)', // blue
+  'rgba(255,255,255,0.98)', // white
+  'rgba(120,180,255,0.98)', // blue
+  'rgba(255,140,0,0.98)' // orange
 ];
-const METEOR_MIN_LEN = 80;
-const METEOR_MAX_LEN = 180;
-const METEOR_MIN_SPEED = 7;
-const METEOR_MAX_SPEED = 13;
-const METEOR_SPAWN_INTERVAL = 180; // ms
-const METEOR_THICKNESS = 3;
+
+const METEOR_MIN_LEN = 100;
+const METEOR_MAX_LEN = 220;
+const METEOR_MIN_SPEED = 10;
+const METEOR_MAX_SPEED = 18;
+const METEOR_SPAWN_INTERVAL = 200; // ms (slower, more subtle)
+const METEOR_THICKNESS = 5; // thinner
 
 function randomMeteor(canvasWidth: number, canvasHeight: number) {
   // Meteors streak diagonally from random X at top, angle ~-30deg
@@ -37,16 +41,16 @@ function randomMeteor(canvasWidth: number, canvasHeight: number) {
   };
 }
 
-const MeteorShower: React.FC<{ duration: number; onComplete: () => void }> = ({ duration, onComplete }) => {
+const MeteorShower: React.FC<{ active: boolean }> = ({ active }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const meteors = useRef<any[]>([]);
-  const running = useRef(true);
   const animationFrame = useRef<number>();
-  const spawnInterval = useRef<number>();
-  const endTimeout = useRef<number>();
 
   useEffect(() => {
-    running.current = true;
+    if (!active) {
+      if (animationFrame.current) cancelAnimationFrame(animationFrame.current);
+      return;
+    }
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
@@ -56,7 +60,7 @@ const MeteorShower: React.FC<{ duration: number; onComplete: () => void }> = ({ 
     canvas.width = width;
     canvas.height = height;
 
-    // Handle resize
+    // Resize handler
     const handleResize = () => {
       width = window.innerWidth;
       height = window.innerHeight;
@@ -65,68 +69,67 @@ const MeteorShower: React.FC<{ duration: number; onComplete: () => void }> = ({ 
     };
     window.addEventListener('resize', handleResize);
 
-    // Spawn meteors
-    spawnInterval.current = window.setInterval(() => {
-      if (!running.current) return;
-      meteors.current.push(randomMeteor(width, height));
-    }, METEOR_SPAWN_INTERVAL);
-
     // Animation loop
-    const animate = () => {
+    let lastSpawn = 0;
+    const animate = (now: number) => {
       ctx.clearRect(0, 0, width, height);
-      meteors.current.forEach((m, i) => {
-        // Move meteor
-        m.x += Math.cos(m.angle) * m.speed;
-        m.y += Math.sin(m.angle) * m.speed;
-        m.alpha *= 0.985;
-        // Draw trail
+      // Spawn meteors every ~120ms
+      if (now - lastSpawn > 120) {
+        meteors.current.push({
+          x: Math.random() * width,
+          y: -40 + Math.random() * (height * 0.5),
+          angle: (-Math.PI / 6) + (Math.random() - 0.5) * 0.1,
+          len: 120 + Math.random() * 60,
+          speed: 8 + Math.random() * 4,
+          alpha: 1,
+        });
+        lastSpawn = now;
+      }
+      meteors.current.forEach((m) => {
+        // Trail
         ctx.save();
-        ctx.globalAlpha = m.alpha;
-        ctx.strokeStyle = m.color;
-        ctx.shadowColor = m.color;
-        ctx.shadowBlur = 16;
-        ctx.lineWidth = METEOR_THICKNESS;
+        ctx.globalAlpha = m.alpha * 0.7;
+        ctx.strokeStyle = 'orange';
+        ctx.shadowColor = 'orange';
+        ctx.shadowBlur = 12;
+        ctx.lineWidth = 6;
         ctx.beginPath();
         ctx.moveTo(m.x, m.y);
         ctx.lineTo(m.x - Math.cos(m.angle) * m.len, m.y - Math.sin(m.angle) * m.len);
         ctx.stroke();
         ctx.restore();
+        // Animate
+        m.x += Math.cos(m.angle) * m.speed;
+        m.y += Math.sin(m.angle) * m.speed;
+        m.alpha *= 0.98;
       });
-      // Remove meteors that are off screen or faded
       meteors.current = meteors.current.filter(m => m.x < width + 100 && m.y < height + 100 && m.alpha > 0.05);
-      if (running.current) animationFrame.current = requestAnimationFrame(animate);
+      animationFrame.current = requestAnimationFrame(animate);
     };
     animationFrame.current = requestAnimationFrame(animate);
-
-    // End event after duration
-    endTimeout.current = window.setTimeout(() => {
-      running.current = false;
-      window.removeEventListener('resize', handleResize);
-      clearInterval(spawnInterval.current);
-      cancelAnimationFrame(animationFrame.current!);
-      onComplete();
-    }, duration * 1000);
-
     return () => {
-      running.current = false;
       window.removeEventListener('resize', handleResize);
-      clearInterval(spawnInterval.current);
-      cancelAnimationFrame(animationFrame.current!);
-      clearTimeout(endTimeout.current);
+      if (animationFrame.current) cancelAnimationFrame(animationFrame.current);
+      meteors.current = [];
     };
-  }, [duration, onComplete]);
+  }, [active]);
 
   return (
-    <canvas
-      ref={canvasRef}
-      className="fixed inset-0 pointer-events-none z-40"
-      style={{ width: '100vw', height: '100vh' }}
-    />
+    <>
+      {active && (
+        <div className="rush-meteor" style={{position: 'fixed', top: 0, left: 0, width: 1, height: 1, opacity: 0, pointerEvents: 'none', zIndex: 100}} aria-hidden="true" />
+      )}
+      <canvas
+        ref={canvasRef}
+        className="fixed inset-0 w-full h-full pointer-events-none z-10"
+        style={{ width: '100vw', height: '100vh' }}
+      />
+    </>
   );
 };
 
 // --- Black Hole Animation ---
-const BlackHole: React.FC<{ duration: number; onComplete: () => void }> = ({ duration, onComplete }) => {
+const BlackHole: React.FC<{ duration: number; onComplete?: () => void; localCenter?: boolean; backgroundLayer?: boolean }> = ({ duration, onComplete, localCenter, backgroundLayer }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const running = useRef(true);
   const animationFrame = useRef<number>();
@@ -138,64 +141,91 @@ const BlackHole: React.FC<{ duration: number; onComplete: () => void }> = ({ dur
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
-    let width = window.innerWidth;
-    let height = window.innerHeight;
+    let width = canvas.offsetWidth;
+    let height = canvas.offsetHeight;
     canvas.width = width;
     canvas.height = height;
 
     // Center
-    const cx = width / 2;
-    const cy = height / 2;
+    let cx = width / 2;
+    let cy = height / 2;
     let t = 0;
 
     // Handle resize
     const handleResize = () => {
-      width = window.innerWidth;
-      height = window.innerHeight;
+      width = canvas.offsetWidth;
+      height = canvas.offsetHeight;
       canvas.width = width;
       canvas.height = height;
+      cx = width / 2;
+      cy = height / 2;
     };
     window.addEventListener('resize', handleResize);
 
     // Animation loop
     const animate = () => {
       ctx.clearRect(0, 0, width, height);
-      // Swirling accretion disk
-      for (let i = 0; i < 32; i++) {
-        const angle = (t * 0.03 + i * (Math.PI * 2) / 32);
-        const r1 = 120 + Math.sin(t * 0.01 + i) * 8;
-        const r2 = 160 + Math.cos(t * 0.012 + i) * 12;
-        ctx.save();
-        ctx.globalAlpha = 0.13 + 0.07 * Math.sin(t * 0.02 + i);
-        ctx.strokeStyle = `hsl(${260 + i * 4}, 90%, 70%)`;
-        ctx.shadowColor = '#a78bfa';
-        ctx.shadowBlur = 24;
-        ctx.lineWidth = 8 + 2 * Math.sin(t * 0.03 + i);
-        ctx.beginPath();
-        ctx.arc(cx, cy, r1 + (r2 - r1) * 0.5, angle, angle + 0.25);
-        ctx.stroke();
-        ctx.restore();
-      }
-      // Black hole core
+      // Multi-layered glowing ring inspired by the provided image, now animated
+      // Outer purple glow (rotates and pulses)
+      const purpleAngle = t * 0.008;
+      const purpleRadius = Math.min(width, height) * (0.36 + 0.01 * Math.sin(t * 0.012));
       ctx.save();
       ctx.beginPath();
-      ctx.arc(cx, cy, 80, 0, Math.PI * 2);
+      ctx.arc(cx, cy, purpleRadius, purpleAngle, purpleAngle + Math.PI * 2 * 0.98);
+      ctx.strokeStyle = 'rgba(120,80,255,0.35)';
+      ctx.lineWidth = Math.min(width, height) * 0.10;
+      ctx.shadowColor = 'rgba(120,80,255,0.7)';
+      ctx.shadowBlur = 40 + 10 * Math.sin(t * 0.01);
+      ctx.globalAlpha = 1;
+      ctx.stroke();
+      ctx.restore();
+      // Orange ring (rotates and pulses)
+      const orangeAngle = -t * 0.012;
+      const orangeRadius = Math.min(width, height) * (0.33 + 0.008 * Math.cos(t * 0.015));
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(cx, cy, orangeRadius, orangeAngle, orangeAngle + Math.PI * 2 * 0.97);
+      ctx.strokeStyle = 'rgba(255,140,0,0.95)';
+      ctx.lineWidth = Math.min(width, height) * 0.07;
+      ctx.shadowColor = 'rgba(255,140,0,1)';
+      ctx.shadowBlur = 40 + 8 * Math.cos(t * 0.013);
+      ctx.globalAlpha = 1;
+      ctx.stroke();
+      ctx.restore();
+      // Yellow ring (rotates and pulses)
+      const yellowAngle = t * 0.015;
+      const yellowRadius = Math.min(width, height) * (0.305 + 0.006 * Math.sin(t * 0.018));
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(cx, cy, yellowRadius, yellowAngle, yellowAngle + Math.PI * 2 * 0.96);
+      ctx.strokeStyle = 'rgba(255,220,80,0.85)';
+      ctx.lineWidth = Math.min(width, height) * 0.04;
+      ctx.shadowColor = 'rgba(255,220,80,0.7)';
+      ctx.shadowBlur = 20 + 6 * Math.sin(t * 0.017);
+      ctx.globalAlpha = 1;
+      ctx.stroke();
+      ctx.restore();
+      // Bright white inner edge (shimmers)
+      const whiteRadius = Math.min(width, height) * (0.29 + 0.003 * Math.sin(t * 0.021));
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(cx, cy, whiteRadius, 0, Math.PI * 2);
+      ctx.strokeStyle = 'rgba(255,255,255,' + (0.85 + 0.15 * Math.sin(t * 0.025)) + ')';
+      ctx.lineWidth = Math.min(width, height) * 0.018;
+      ctx.shadowColor = 'rgba(255,255,255,0.7)';
+      ctx.shadowBlur = 10 + 4 * Math.cos(t * 0.019);
+      ctx.globalAlpha = 1;
+      ctx.stroke();
+      ctx.restore();
+      // Black hole core (unchanged)
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(cx, cy, Math.min(width, height) * 0.25, 0, Math.PI * 2);
       ctx.fillStyle = 'black';
       ctx.shadowColor = '#7c3aed';
       ctx.shadowBlur = 60;
       ctx.globalAlpha = 1;
       ctx.fill();
-      ctx.restore();
-      // Intense glow
-      ctx.save();
-      ctx.beginPath();
-      ctx.arc(cx, cy, 100, 0, Math.PI * 2);
-      ctx.strokeStyle = 'rgba(120,80,255,0.25)';
-      ctx.lineWidth = 40;
-      ctx.shadowColor = '#a78bfa';
-      ctx.shadowBlur = 80;
-      ctx.globalAlpha = 0.7;
-      ctx.stroke();
       ctx.restore();
       t++;
       if (running.current) animationFrame.current = requestAnimationFrame(animate);
@@ -207,7 +237,7 @@ const BlackHole: React.FC<{ duration: number; onComplete: () => void }> = ({ dur
       running.current = false;
       window.removeEventListener('resize', handleResize);
       cancelAnimationFrame(animationFrame.current!);
-      onComplete();
+      if (onComplete) onComplete();
     }, duration * 1000);
 
     return () => {
@@ -219,20 +249,29 @@ const BlackHole: React.FC<{ duration: number; onComplete: () => void }> = ({ dur
   }, [duration, onComplete]);
 
   return (
-    <canvas
-      ref={canvasRef}
-      className="fixed inset-0 pointer-events-none z-50"
-      style={{ width: '100vw', height: '100vh' }}
-    />
+    <div
+      className={backgroundLayer
+        ? 'rush-blackhole absolute inset-0 pointer-events-none z-0 flex items-center justify-center'
+        : localCenter
+        ? 'rush-blackhole absolute inset-0 pointer-events-none z-40 flex items-center justify-center'
+        : 'rush-blackhole fixed inset-0 pointer-events-none z-40 flex items-center justify-center'}
+      style={localCenter || backgroundLayer ? {} : { marginLeft: '25vw', width: '75vw', maxWidth: '1200px' }}
+    >
+      <canvas
+        ref={canvasRef}
+        className="w-full h-full"
+        style={{ width: '100%', height: '100%' }}
+      />
+    </div>
   );
 };
 
-const RushEventAnimation: React.FC<RushEventAnimationProps> = ({ event, onComplete }) => {
+const RushEventAnimation: React.FC<RushEventAnimationProps> = ({ event, onComplete, localCenter, backgroundLayer }) => {
   if (event.id === 'meteorShower') {
-    return <MeteorShower duration={event.duration} onComplete={onComplete} />;
+    return <MeteorShower active={true} />;
   }
   if (event.id === 'blackHoleRift') {
-    return <BlackHole duration={event.duration} onComplete={onComplete} />;
+    return <BlackHole duration={event.duration} onComplete={onComplete} localCenter={localCenter} backgroundLayer={backgroundLayer} />;
   }
   return null;
 };

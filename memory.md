@@ -113,10 +113,15 @@ Update this file whenever the file structure or major project details change.
 - Falling stars (meteors) are now simple, small, twinkling white dots (2-4px), with no glow, trail, or orb effect.
 - Fixed duplicate key warning in src/components/RushEventsPanel.tsx by using event.id + '-' + event.startedAt as the key for active events.
 - Improved black hole rush event animation in src/components/RushEventAnimation.tsx: now perfectly centered and sized to match the clicker, with a swirling accretion disk, intense circular glow, and a more realistic black hole core.
-- Improved meteor rush event animation in src/components/RushEventAnimation.tsx: meteors are now more visible, animate smoothly, and the animation is properly cleaned up when the event ends. 
+- Improved meteor rush event animation in src/components/RushEventAnimation.tsx: meteors are now more visible, animate smoothly, and the animation is properly cleaned up when the event ends.
+- The BlackHole rush event animation in `RushEventAnimation.tsx` is now centered in the right 75% of the screen (using a wrapper with marginLeft: 25vw and width: 75vw) to avoid overlapping the stat/currency box on the left.
+- All rush event animations are now visually impressive, cosmic-feeling, and strictly tied to the event lifecycle for performance and polish.
 
-# Rush Event Animation Overhaul (2024-06)
-- Completely rebuilt `src/components/RushEventAnimation.tsx` to use HTML canvas for both meteor shower and black hole rush events.
-- **Meteor Shower:** Now features glowing, diagonal meteors with fading trails, randomized color (white, blue, orange), and cosmic glow. Meteors streak from random positions at the top, at a -30° angle, and fade out as they exit the screen. All animation state and timers are cleaned up immediately when the event ends.
-- **Black Hole Rift:** Now perfectly centered on the screen, with a swirling accretion disk (animated with color and glow), an intense circular glow, and a realistic black hole core. Uses canvas for smooth, modern animation. All animation state and timers are cleaned up immediately when the event ends.
-- All rush event animations are now visually impressive, cosmic-feeling, and strictly tied to the event lifecycle for performance and polish. 
+## File Structure (key files)
+- src/components/RushEventAnimation.tsx: Handles rush event animations (meteor shower, black hole rift). Now includes .rush-meteor and .rush-blackhole wrappers for testability.
+- src/components/Game.tsx: Main game logic, mounts RushEventAnimation for active events.
+- tests/rushEvents.spec.ts: Playwright tests for event animations, expects .rush-meteor and .rush-blackhole selectors.
+
+## Notes
+- `.rush-meteor` (MeteorShower) and `.rush-blackhole` (BlackHole) wrappers are required for E2E tests to detect and verify animation overlays.
+- Animation logic and cleanup are handled in RushEventAnimation.tsx; parent unmounts on onComplete.
