@@ -24,12 +24,39 @@ const GalaxyClicker: React.FC<GalaxyClickerProps> = ({ eventMultiplier = 1, chil
   const [clickSound] = useState(() => new Audio('/audio/click.mp3'));
   const [clickFeedbacks, setClickFeedbacks] = useState<ClickFeedbackInstance[]>([]);
   const [nextFeedbackId, setNextFeedbackId] = useState(0);
+  const SETTINGS_KEY = 'cosmicClickerSettings';
   
   useEffect(() => {
-    clickSound.volume = 0;
+    // Set initial volume from settings
+    let sfxVolume = 0.5;
+    try {
+      const saved = localStorage.getItem(SETTINGS_KEY);
+      if (saved) {
+        sfxVolume = JSON.parse(saved).sfxVolume ?? 0.5;
+      }
+    } catch {}
+    clickSound.volume = sfxVolume;
     clickSound.play().catch(() => {});
-    clickSound.volume = 0.2;
     clickSound.currentTime = 0;
+  }, [clickSound]);
+
+  // Listen for SFX volume changes in localStorage and custom event
+  useEffect(() => {
+    const handleStorage = () => {
+      try {
+        const saved = localStorage.getItem(SETTINGS_KEY);
+        if (saved) {
+          const sfxVolume = JSON.parse(saved).sfxVolume ?? 0.5;
+          clickSound.volume = sfxVolume;
+        }
+      } catch {}
+    };
+    window.addEventListener('storage', handleStorage);
+    window.addEventListener('settingsChanged', handleStorage);
+    return () => {
+      window.removeEventListener('storage', handleStorage);
+      window.removeEventListener('settingsChanged', handleStorage);
+    };
   }, [clickSound]);
 
   const handleClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {

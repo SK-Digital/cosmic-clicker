@@ -12,8 +12,38 @@ interface UpgradeItemProps {
 const UpgradeItem: React.FC<UpgradeItemProps> = ({ upgrade, bulkAmount }) => {
   const { state, dispatch } = useGame();
   const purchaseSound = React.useRef<HTMLAudioElement | null>(null);
+  const SETTINGS_KEY = 'cosmicClickerSettings';
+  
   React.useEffect(() => {
     purchaseSound.current = new Audio('/audio/purchase.mp3');
+    // Set initial volume from settings
+    let sfxVolume = 0.5;
+    try {
+      const saved = localStorage.getItem(SETTINGS_KEY);
+      if (saved) {
+        sfxVolume = JSON.parse(saved).sfxVolume ?? 0.5;
+      }
+    } catch {}
+    if (purchaseSound.current) purchaseSound.current.volume = sfxVolume;
+  }, []);
+
+  // Listen for SFX volume changes in localStorage and custom event
+  React.useEffect(() => {
+    const handleStorage = () => {
+      try {
+        const saved = localStorage.getItem(SETTINGS_KEY);
+        if (saved && purchaseSound.current) {
+          const sfxVolume = JSON.parse(saved).sfxVolume ?? 0.5;
+          purchaseSound.current.volume = sfxVolume;
+        }
+      } catch {}
+    };
+    window.addEventListener('storage', handleStorage);
+    window.addEventListener('settingsChanged', handleStorage);
+    return () => {
+      window.removeEventListener('storage', handleStorage);
+      window.removeEventListener('settingsChanged', handleStorage);
+    };
   }, []);
   
   const effectiveBulkAmount = upgrade.maxLevel 

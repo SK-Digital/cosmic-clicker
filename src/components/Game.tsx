@@ -5,7 +5,7 @@ import GalaxyClicker from './GalaxyClicker';
 import Background from './Background';
 import UpgradesPanel from './UpgradesPanel';
 import StardustCounter from './StardustCounter';
-import { Store, Rocket } from 'lucide-react';
+import { Store, Rocket, Settings } from 'lucide-react';
 import RushEventsPanel from './RushEventsPanel';
 import RushEventAnimation from './RushEventAnimation';
 import { getActiveEventMultiplier } from '../context/GameContext';
@@ -14,12 +14,14 @@ import AchievementToast from './AchievementToast';
 import { achievementDefs } from './AchievementsPanel';
 import LifetimeStatsPanel from './LifetimeStatsPanel';
 import { BarChart3 } from 'lucide-react';
+import SettingsPanel from './SettingsPanel';
 
 const Game: React.FC = () => {
   const [showUpgrades, setShowUpgrades] = useState(false);
   const [showRushEvents, setShowRushEvents] = useState(false);
   const [showAchievements, setShowAchievements] = useState(false);
   const [showStats, setShowStats] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const { dispatch, state } = useGame();
   const activeEvent = state.activeEvents.length > 0 ? state.activeEvents[0] : null;
   const eventMultiplier = getActiveEventMultiplier(state.activeEvents);
@@ -142,6 +144,18 @@ const Game: React.FC = () => {
                 Lifetime Stats
               </div>
             </div>
+            <div className="relative group">
+              <button
+                onClick={() => setShowSettings(true)}
+                className="p-3 rounded-full bg-indigo-900/60 hover:bg-indigo-800/80 text-white transition-colors"
+                title="Settings"
+              >
+                <Settings className="w-6 h-6" />
+              </button>
+              <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-2 py-1 bg-indigo-900/95 rounded text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity z-50">
+                Settings
+              </div>
+            </div>
           </div>
         </div>
 
@@ -196,6 +210,11 @@ const Game: React.FC = () => {
       {showStats && (
         <div className="fixed right-0 top-0 bottom-0 z-40 w-96 max-w-full">
           <LifetimeStatsPanel onClose={() => setShowStats(false)} />
+        </div>
+      )}
+      {showSettings && (
+        <div className="fixed right-0 top-0 bottom-0 z-40 w-96 max-w-full">
+          <SettingsPanel onClose={() => setShowSettings(false)} />
         </div>
       )}
     </div>
