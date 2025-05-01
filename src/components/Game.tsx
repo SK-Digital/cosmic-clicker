@@ -16,6 +16,8 @@ import LifetimeStatsPanel from './LifetimeStatsPanel';
 import { BarChart3 } from 'lucide-react';
 import SettingsPanel from './SettingsPanel';
 
+const SETTINGS_KEY = 'cosmicClickerSettings';
+
 const Game: React.FC = () => {
   const [showUpgrades, setShowUpgrades] = useState(false);
   const [showRushEvents, setShowRushEvents] = useState(false);
@@ -54,6 +56,24 @@ const Game: React.FC = () => {
     return () => clearTimeout(timer);
   }, [toasts]);
   // --- End Achievement Toast Logic ---
+
+  // Accessibility: apply settings as classes on root div
+  useEffect(() => {
+    const applyAccessibility = () => {
+      let settings = { highContrast: false, colorblind: false, reducedMotion: false };
+      try {
+        const saved = localStorage.getItem(SETTINGS_KEY);
+        if (saved) settings = { ...settings, ...JSON.parse(saved) };
+      } catch {}
+      const root = document.documentElement;
+      root.classList.toggle('high-contrast', !!settings.highContrast);
+      root.classList.toggle('colorblind', !!settings.colorblind);
+      root.classList.toggle('reduced-motion', !!settings.reducedMotion);
+    };
+    applyAccessibility();
+    window.addEventListener('settingsChanged', applyAccessibility);
+    return () => window.removeEventListener('settingsChanged', applyAccessibility);
+  }, []);
 
   return (
     <div className="relative w-full h-screen flex bg-transparent">

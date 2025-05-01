@@ -168,3 +168,37 @@
     transform: translateX(0);
   }
 }
+
+/* Accessibility: High Contrast Mode */
+.high-contrast body, .high-contrast .bg-indigo-900\/80, .high-contrast .bg-indigo-900\/90, .high-contrast .bg-indigo-900\/70, .high-contrast .bg-indigo-900\/50 {
+  background-color: #181818 !important;
+  color: #fff !important;
+}
+.high-contrast .text-indigo-200, .high-contrast .text-indigo-300, .high-contrast .text-indigo-400, .high-contrast .text-indigo-800, .high-contrast .text-indigo-900 {
+  color: #fff !important;
+}
+.high-contrast .border-indigo-700\/40, .high-contrast .border-indigo-800\/30, .high-contrast .border-indigo-800\/50, .high-contrast .border-indigo-400\/30 {
+  border-color: #fff !important;
+}
+
+/* Accessibility: Colorblind-Friendly Mode */
+.colorblind .bg-indigo-900\/80, .colorblind .bg-indigo-900\/90, .colorblind .bg-indigo-900\/70, .colorblind .bg-indigo-900\/50 {
+  background-color: #2a3a4d !important;
+}
+.colorblind .text-green-400 {
+  color: #ffd700 !important; /* Use gold/yellow for positive */
+}
+.colorblind .text-red-400 {
+  color: #ff8c00 !important; /* Use orange for negative */
+}
+.colorblind .bg-gradient-to-r {
+  background-image: linear-gradient(to right, #00bfff, #ffd700, #ff8c00) !important;
+}
+
+/* Accessibility: Reduced Motion */
+.reduced-motion *, .reduced-motion *:before, .reduced-motion *:after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
