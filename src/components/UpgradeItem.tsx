@@ -1,5 +1,5 @@
 import React from 'react';
-import { Star, Cloud, Orbit, Rocket } from 'lucide-react';
+import { Star, Rocket } from 'lucide-react';
 import { useGame } from '../context/GameContext';
 import { Upgrade } from '../context/GameContext';
 import { calculateBulkUpgradeCost, formatNumber } from '../utils/gameUtils';
@@ -70,9 +70,9 @@ const UpgradeItem: React.FC<UpgradeItemProps> = ({ upgrade, bulkAmount }) => {
       case 'star':
         return <img src="/icons/star.png" alt="Star" className="w-10 h-10" />;
       case 'cloud':
-        return <img src="/icons/cloud.png" alt="Cloud" className="w-10 h-10" onError={e => { e.currentTarget.src = '/icons/blackhole.png'; }} />;
+        return <img src="/icons/blackhole.png" alt="Cloud" className="w-10 h-10" />;
       case 'orbit':
-        return <img src="/icons/orbit.png" alt="Orbit" className="w-10 h-10" onError={e => { e.currentTarget.src = '/icons/galaxy.png'; }} />;
+        return <img src="/icons/galaxy.png" alt="Orbit" className="w-10 h-10" />;
       case 'rocket':
         return <img src="/icons/rocket.png" alt="Rocket" className="w-10 h-10" onError={e => { e.currentTarget.src = '/icons/meteor.png'; }} />;
       default:

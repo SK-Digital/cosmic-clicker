@@ -65,7 +65,7 @@ const initialUpgrades: Record<string, Upgrade> = {
     effect: 5,
     effectMultiplier: 1.2,
     type: 'click',
-    icon: 'orbit',
+    icon: 'galaxy',
   },
   supernovaBoost: {
     id: 'supernovaBoost',
@@ -125,7 +125,7 @@ const initialUpgrades: Record<string, Upgrade> = {
     effect: 5,
     effectMultiplier: 1.15,
     type: 'passive',
-    icon: 'cloud',
+    icon: 'blackhole',
   },
   blackHoleExtractors: {
     id: 'blackHoleExtractors',
@@ -137,7 +137,7 @@ const initialUpgrades: Record<string, Upgrade> = {
     effect: 25,
     effectMultiplier: 1.18,
     type: 'passive',
-    icon: 'orbit',
+    icon: 'galaxy',
   },
   galacticCondensers: {
     id: 'galacticCondensers',
