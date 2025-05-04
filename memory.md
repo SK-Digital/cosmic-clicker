@@ -17,6 +17,7 @@
     - achievements.png: Achievements icon
     - meteor.png: Meteor rush event visual
     - blackhole.png: Black hole rush event visual
+    - account.png: Account button icon
 - src/
   - App.tsx — Main app entry
   - main.tsx — React entry point
@@ -168,3 +169,60 @@ Update this file whenever the file structure or major project details change.
 - Prestige system added: Game state now tracks prestigeCount (number of prestiges), prestigeCurrency (permanent bonus, e.g. cosmic shards), and totalStardustEarned. When the PRESTIGE action is triggered, all progress except achievements and prestige stats is reset. Prestige currency is earned as floor(sqrt(totalStardustEarned / 1,000,000)), and each prestige increases a permanent stardust multiplier by 10%. Achievements are retained on prestige.
 
 - The stats panel now displays prestige stats (prestigeCount, prestigeCurrency, stardust multiplier) and includes a prestige button with a confirmation modal. The prestige system is fully implemented and tested. Next up: achievements polish and audio integration.
+
+## [NEW] src/utils/supabaseClient.ts
+- Initializes and exports the Supabase client using environment variables VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.
+- Used for authentication and cloud save features throughout the app.
+
+## [IN PROGRESS] Supabase Integration
+- Supabase Auth and cloud save integration is starting.
+- .env setup for Supabase keys will be required for local development and deployment.
+
+- @supabase/supabase-js installed as a dependency for Supabase integration (auth, cloud save).
+
+## [NEW] src/components/AuthPanel.tsx
+- Provides authentication UI for Supabase (login, signup, logout, and user display).
+- Will be integrated into the main game UI for cloud save features.
+
+- AuthPanel integrated into Game.tsx, accessible via an Account button in the top bar overlay controls.
+- Account button in Game.tsx now uses a default SVG user icon; /public/icons/account.png is no longer required.
+
+- Guest play is supported: users can play without an account, and their progress is saved locally.
+- Users can create an account at any time; existing progress will be tied to their new account and synced to the cloud.
+
+- src/utils/gameUtils.ts now includes utility functions for saving/loading game state to localStorage (guest) and Supabase (authenticated), supporting seamless guest-to-account progress sync.
+
+- src/context/GameContext.tsx now supports both guest and authenticated play: loads and saves to localStorage or Supabase as appropriate, and syncs local progress to the cloud when an account is created. The user object is now available in context for use throughout the app.
+
+- The signup form now requires a username, which is stored in Supabase user metadata and will be used for leaderboards and profile display in the future.
+
+- Users can now edit their username after signup, with validation and uniqueness enforced. This completes the username/account creation and saving requirements for future leaderboards and profile features.
+
+# Project Memory: Cosmic Clicker
+
+## File Structure (src/components)
+- Game.tsx (main game UI, top bar, overlays)
+- LeaderboardPanel.tsx (leaderboard UI)
+- AuthPanel.tsx (authentication and username management)
+- SettingsPanel.tsx, UpgradesPanel.tsx, RushEventsPanel.tsx, etc.
+- Context: src/context/GameContext.tsx (global game state)
+- Utils: src/utils/gameUtils.ts (save/load, leaderboard fetch)
+
+## GameState (src/context/GameContext.tsx)
+- Now includes a `username` field (string | undefined)
+- Username is synced from Supabase user metadata (or email fallback)
+- Username is saved to cloud/local on login, username change, or load
+- Leaderboard fetches username from game save, so user always appears with correct name if set
+
+## Leaderboard Icon Order (src/components/Game.tsx)
+- Leaderboard icon is now next to the profile/account icon
+- Account and settings icons are always the last two icons in the top bar
+
+## Username Sync Logic
+- When user logs in or updates username, game state is updated and saved
+- AuthPanel updates game state and triggers save on username change
+- Leaderboard always displays the correct username if set in game state
+
+## Outstanding
+- Ensure all username changes propagate to cloud/local saves
+- Test that 'SupremeK' or any user appears in leaderboard after login/username update

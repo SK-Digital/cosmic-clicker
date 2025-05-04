@@ -1,5 +1,7 @@
-import React, { createContext, useContext, useEffect, useReducer } from 'react';
+import React, { createContext, useContext, useEffect, useReducer, useState } from 'react';
 import { calculateUpgradeCost } from '../utils/gameUtils';
+import { supabase } from '../utils/supabaseClient';
+import { saveGameToCloud, loadGameFromCloud, saveGameToLocal, loadGameFromLocal, LOCAL_SAVE_KEY } from '../utils/gameUtils';
 
 export interface Upgrade {
   id: string;
@@ -37,6 +39,7 @@ export interface GameState {
   prestigeCount: number;
   prestigeCurrency: number;
   totalStardustEarned: number;
+  username?: string;
 }
 
 const initialUpgrades: Record<string, Upgrade> = {
@@ -211,6 +214,7 @@ const initialState: GameState = {
   prestigeCount: 0,
   prestigeCurrency: 0,
   totalStardustEarned: 0,
+  username: undefined,
 };
 
 const calculatePassiveIncome = (upgrades: Record<string, Upgrade>): number => {
@@ -278,7 +282,8 @@ type GameAction =
   | { type: 'START_EVENT'; event: { id: string; name: string; duration: number; startedAt: number } }
   | { type: 'END_EVENT'; eventId: string; startedAt: number }
   | { type: 'ACHIEVEMENT_PROGRESS'; id: string; progress?: number; unlock?: boolean }
-  | { type: 'PRESTIGE' };
+  | { type: 'PRESTIGE' }
+  | { type: 'SET_USERNAME'; username: string };
 
 const gameReducer = (state: GameState, action: GameAction): GameState => {
   switch (action.type) {
@@ -286,6 +291,7 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       const eventMultiplier = getActiveEventMultiplier(state.activeEvents);
       const achievements = { ...state.achievements };
       const newTotalClicks = (state.totalClicks || 0) + 1;
+      const clickGain = state.clickPower * eventMultiplier;
       if (!achievements['first-click'].unlocked) {
         achievements['first-click'] = { ...achievements['first-click'], unlocked: true };
       }
@@ -299,7 +305,8 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       }
       return {
         ...state,
-        stardust: state.stardust + state.clickPower * eventMultiplier,
+        stardust: state.stardust + clickGain,
+        totalStardustEarned: (state.totalStardustEarned || 0) + clickGain,
         achievements,
         totalClicks: newTotalClicks,
       };
@@ -358,8 +365,8 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       const totalClicks = (action.state as any).totalClicks ?? 0;
       const totalUpgradesBought = (action.state as any).totalUpgradesBought ?? 0;
       const totalEventsTriggered = (action.state as any).totalEventsTriggered ?? 0;
-      // Recalculate achievement progress from totalClicks
-      const achievements = { ...action.state.achievements };
+      // Merge achievements: loaded achievements override initial, but keep new ones
+      const achievements = { ...initialAchievements, ...action.state.achievements };
       if (achievements['hundred-clicks']) {
         const progress = totalClicks;
         if (progress >= 100) {
@@ -368,17 +375,21 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
           achievements['hundred-clicks'] = { ...achievements['hundred-clicks'], progress };
         }
       }
+      // Merge upgrades: loaded upgrades override initial, but keep new ones
+      const upgrades = { ...initialUpgrades, ...action.state.upgrades };
       return {
+        ...initialState,
         ...action.state,
-        clickPower: calculateClickPower(action.state.upgrades),
-        passiveIncome: calculatePassiveIncome(action.state.upgrades),
+        clickPower: calculateClickPower(upgrades),
+        passiveIncome: calculatePassiveIncome(upgrades),
         lastTick: Date.now(),
         lastSaved: Date.now(),
-        eventChance: calculateEventChance(action.state.upgrades),
+        eventChance: calculateEventChance(upgrades),
         totalClicks,
         totalUpgradesBought,
         totalEventsTriggered,
         achievements,
+        upgrades,
       };
     }
     case 'START_EVENT': {
@@ -426,32 +437,88 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         achievements: state.achievements, // Keep achievements
       };
     }
+    case 'SET_USERNAME': {
+      return { ...state, username: action.username };
+    }
     default:
       return state;
   }
 };
 
-const GameContext = createContext<{ state: GameState; dispatch: React.Dispatch<GameAction> } | undefined>(undefined);
+const GameContext = createContext<{ state: GameState; dispatch: React.Dispatch<GameAction>; user: any } | undefined>(undefined);
 
 export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [state, dispatch] = useReducer(gameReducer, initialState);
-  
+  const [user, setUser] = useState<any>(null);
+  const [initialLoad, setInitialLoad] = useState(false);
+  const localSaveRef = React.useRef<GameState | null>(null); // Store guest progress
+
+  // Listen for Supabase auth changes
   useEffect(() => {
-    const savedState = localStorage.getItem('cosmicClickerGameState');
-    if (savedState) {
-      try {
-        const parsedState = JSON.parse(savedState);
-        dispatch({ type: 'LOAD_GAME', state: parsedState });
-      } catch (error) {
-        console.error('Failed to load game state:', error);
-      }
-    }
+    let mounted = true;
+    supabase.auth.getSession().then(({ data }) => {
+      if (mounted) setUser(data.session?.user ?? null);
+    });
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+    return () => {
+      mounted = false;
+      listener.subscription.unsubscribe();
+    };
   }, []);
-  
+
+  // Initial load: load from cloud if logged in, else from local
   useEffect(() => {
-    localStorage.setItem('cosmicClickerGameState', JSON.stringify(state));
-  }, [state]);
-  
+    let cancelled = false;
+    async function load() {
+      if (user) {
+        // Store the current local save before switching to cloud
+        if (!localSaveRef.current) {
+          localSaveRef.current = loadGameFromLocal();
+        }
+        const cloudState = await loadGameFromCloud(user.id);
+        if (cloudState) {
+          dispatch({ type: 'LOAD_GAME', state: cloudState });
+        } else {
+          // If no cloud save, check for local and sync it
+          const localState = loadGameFromLocal();
+          if (localState) {
+            await saveGameToCloud(user.id, localState);
+            dispatch({ type: 'LOAD_GAME', state: localState });
+          } else {
+            // No local or cloud save, use initial state
+            dispatch({ type: 'LOAD_GAME', state: initialState });
+          }
+        }
+      } else {
+        // On logout, restore the last guest/local save if available
+        if (localSaveRef.current) {
+          dispatch({ type: 'LOAD_GAME', state: localSaveRef.current });
+          localSaveRef.current = null;
+        } else {
+          const localState = loadGameFromLocal();
+          if (localState) {
+            dispatch({ type: 'LOAD_GAME', state: localState });
+          }
+        }
+      }
+      if (!cancelled) setInitialLoad(true);
+    }
+    load();
+    return () => { cancelled = true; };
+  }, [user]);
+
+  // Save on state change (after initial load)
+  useEffect(() => {
+    if (!initialLoad) return;
+    if (user) {
+      saveGameToCloud(user.id, state);
+    } else {
+      saveGameToLocal(state);
+    }
+  }, [state, user, initialLoad]);
+
   useEffect(() => {
     const tickInterval = setInterval(() => {
       dispatch({ type: 'TICK' });
@@ -507,8 +574,17 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => clearInterval(interval);
   }, [state.eventChance, state.activeEvents.length]);
   
+  // Username sync effect: only update username in state, do not reload or save
+  useEffect(() => {
+    if (!user) return;
+    const username = user.user_metadata?.username || user.email || undefined;
+    if (username && state.username !== username) {
+      dispatch({ type: 'SET_USERNAME', username });
+    }
+  }, [user, state.username]);
+
   return (
-    <GameContext.Provider value={{ state, dispatch }}>
+    <GameContext.Provider value={{ state, dispatch, user }}>
       {children}
     </GameContext.Provider>
   );
@@ -523,3 +599,11 @@ export const useGame = () => {
 };
 
 export { rushEvents, getActiveEventMultiplier };
+
+// Utility to delete all progress for the current user
+export async function deleteAllProgress(userId?: string) {
+  if (userId) {
+    await supabase.from('game_saves').delete().eq('user_id', userId);
+  }
+  localStorage.removeItem(LOCAL_SAVE_KEY);
+}

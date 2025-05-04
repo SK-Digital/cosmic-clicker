@@ -77,6 +77,15 @@
 - Game is feature-complete, polished, and accessible
 - All code is committed and pushed to GitHub after each phase
 
+## [IN PROGRESS] Supabase Auth & Cloud Save
+- Supabase project and `game_saves` table created.
+- Supabase client utility and dependency added.
+- .env setup for Supabase keys required.
+- Next: Implement authentication UI/logic and refactor save/load system.
+
+- Guest play is supported: users can play without an account, and their progress is saved locally.
+- Users can create an account at any time; existing progress will be tied to their new account and synced to the cloud.
+
 ---
 
 **Note:** This file must be referenced and followed for all future development. Each phase must be tested and meet criteria before moving to the next. All changes must be committed and pushed to GitHub in a timely and organized manner. 

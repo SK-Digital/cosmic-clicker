@@ -15,6 +15,8 @@ import { achievementDefs } from './AchievementsPanel';
 import LifetimeStatsPanel from './LifetimeStatsPanel';
 import { BarChart3 } from 'lucide-react';
 import SettingsPanel from './SettingsPanel';
+import AuthPanel from './AuthPanel';
+import LeaderboardPanel from './LeaderboardPanel';
 
 const SETTINGS_KEY = 'cosmicClickerSettings';
 
@@ -25,26 +27,49 @@ const Game: React.FC = () => {
   const [showStats, setShowStats] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showPrestige, setShowPrestige] = useState(false);
+  const [showAuth, setShowAuth] = useState(false);
+  const [showLeaderboard, setShowLeaderboard] = useState(false);
   const { dispatch, state } = useGame();
   const activeEvent = state.activeEvents.length > 0 ? state.activeEvents[0] : null;
   const eventMultiplier = getActiveEventMultiplier(state.activeEvents);
   
   // --- Achievement Toast Logic ---
-  const [toasts, setToasts] = useState<{ id: string }[]>([]);
+  const [toasts, setToasts] = useState<{ id: string; toastId: number }[]>([]);
   const prevAchievementsRef = React.useRef(state.achievements);
+  const [hasLoadedAchievements, setHasLoadedAchievements] = useState(false);
+  const [shownAchievementToasts, setShownAchievementToasts] = useState<Set<string>>(() => {
+    try {
+      const saved = localStorage.getItem('cosmicClickerAchievementToasts');
+      if (saved) return new Set(JSON.parse(saved));
+    } catch {}
+    return new Set();
+  });
+
   React.useEffect(() => {
+    if (!hasLoadedAchievements) {
+      setHasLoadedAchievements(true);
+      prevAchievementsRef.current = state.achievements;
+      return;
+    }
     const prev = prevAchievementsRef.current;
-    const newToasts: { id: string }[] = [];
+    const newToasts: { id: string; toastId: number }[] = [];
+    const updatedShown = new Set(shownAchievementToasts);
     for (const id in state.achievements) {
       if (
         state.achievements[id].unlocked &&
-        (!prev[id]?.unlocked)
+        (!prev[id]?.unlocked) &&
+        !shownAchievementToasts.has(id)
       ) {
-        newToasts.push({ id });
+        newToasts.push({ id, toastId: Date.now() + Math.random() });
+        updatedShown.add(id);
       }
     }
     if (newToasts.length > 0) {
       setToasts((old) => [...old, ...newToasts]);
+      setShownAchievementToasts(updatedShown);
+      try {
+        localStorage.setItem('cosmicClickerAchievementToasts', JSON.stringify(Array.from(updatedShown)));
+      } catch {}
     }
     prevAchievementsRef.current = state.achievements;
   }, [state.achievements]);
@@ -80,12 +105,12 @@ const Game: React.FC = () => {
     <div className="relative w-full h-screen flex bg-transparent">
       {/* Toast notification container */}
       <div className="fixed top-6 right-6 z-50 flex flex-col gap-4 items-end pointer-events-none">
-        {toasts.map(({ id }) => {
+        {toasts.map(({ id, toastId }) => {
           const def = achievementDefs.find((a) => a.id === id);
           if (!def) return null;
           return (
             <AchievementToast
-              key={id}
+              key={toastId}
               icon={def.icon}
               name={def.name}
               description={def.description}
@@ -107,7 +132,7 @@ const Game: React.FC = () => {
             Cosmic Clicker
           </h1>
           {/* Hide icons when any overlay is open */}
-          {!(showUpgrades || showRushEvents || showAchievements || showStats || showSettings || showPrestige) && (
+          {!(showUpgrades || showRushEvents || showAchievements || showStats || showSettings || showPrestige || showAuth || showLeaderboard) && (
             <div className="flex gap-2">
               <div className="relative group">
                 <button 
@@ -171,6 +196,41 @@ const Game: React.FC = () => {
                 </button>
                 <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-2 py-1 bg-indigo-900/95 rounded text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity z-50">
                   Lifetime Stats
+                </div>
+              </div>
+              <div className="relative group">
+                <button
+                  onClick={() => setShowLeaderboard(true)}
+                  className="p-3 rounded-full bg-indigo-900/60 hover:bg-indigo-800/80 text-white transition-colors"
+                  title="Leaderboard"
+                >
+                  <img src="/icons/leaderboard.png" alt="Leaderboard" className="w-10 h-10" />
+                </button>
+                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-2 py-1 bg-indigo-900/95 rounded text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity z-50">
+                  Leaderboard
+                </div>
+              </div>
+              <div className="relative group">
+                <button
+                  onClick={() => {
+                    setShowAuth(!showAuth);
+                    setShowRushEvents(false);
+                    setShowUpgrades(false);
+                    setShowAchievements(false);
+                    setShowStats(false);
+                    setShowSettings(false);
+                  }}
+                  className="p-3 rounded-full bg-indigo-900/60 hover:bg-indigo-800/80 text-white transition-colors"
+                  aria-label="Account"
+                >
+                  {/* Default SVG user icon */}
+                  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-8 h-8 mx-auto text-white">
+                    <circle cx="12" cy="8" r="4" fill="currentColor" />
+                    <path d="M4 20c0-2.21 3.58-4 8-4s8 1.79 8 4" fill="currentColor" />
+                  </svg>
+                </button>
+                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-2 py-1 bg-indigo-900/95 rounded text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity z-50">
+                  Account
                 </div>
               </div>
               <div className="relative group">
@@ -290,6 +350,23 @@ const Game: React.FC = () => {
               </button>
             </div>
           </div>
+        </div>
+      )}
+      {showAuth && (
+        <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center">
+          <AuthPanel />
+          <button
+            className="absolute top-4 right-4 text-white text-2xl"
+            onClick={() => setShowAuth(false)}
+            aria-label="Close Account Panel"
+          >
+            ×
+          </button>
+        </div>
+      )}
+      {showLeaderboard && (
+        <div className="fixed right-0 top-0 bottom-0 z-40 w-96 max-w-full">
+          <LeaderboardPanel onClose={() => setShowLeaderboard(false)} />
         </div>
       )}
     </div>
