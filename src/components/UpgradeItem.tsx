@@ -68,15 +68,15 @@ const UpgradeItem: React.FC<UpgradeItemProps> = ({ upgrade, bulkAmount }) => {
   const getIcon = () => {
     switch (upgrade.icon) {
       case 'star':
-        return <Star className="w-5 h-5" />;
+        return <img src="/icons/star.png" alt="Star" className="w-10 h-10" />;
       case 'cloud':
-        return <Cloud className="w-5 h-5" />;
+        return <img src="/icons/cloud.png" alt="Cloud" className="w-10 h-10" onError={e => { e.currentTarget.src = '/icons/blackhole.png'; }} />;
       case 'orbit':
-        return <Orbit className="w-5 h-5" />;
+        return <img src="/icons/orbit.png" alt="Orbit" className="w-10 h-10" onError={e => { e.currentTarget.src = '/icons/galaxy.png'; }} />;
       case 'rocket':
-        return <Rocket className="w-5 h-5 text-white" strokeWidth={2} />;
+        return <img src="/icons/rocket.png" alt="Rocket" className="w-10 h-10" onError={e => { e.currentTarget.src = '/icons/meteor.png'; }} />;
       default:
-        return <Star className="w-5 h-5" />;
+        return <img src="/icons/blackhole.png" alt="Fallback" className="w-10 h-10" />;
     }
   };
 

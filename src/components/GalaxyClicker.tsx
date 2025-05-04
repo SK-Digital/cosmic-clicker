@@ -137,16 +137,7 @@ const GalaxyClicker: React.FC<GalaxyClickerProps> = ({ eventMultiplier = 1, chil
         `}
         onClick={handleClick}
       >
-        <div className="absolute inset-0 opacity-40 bg-[radial-gradient(circle_at_center,rgba(120,80,255,0.5)_0%,transparent_80%)] pointer-events-none"></div>
-        <Sparkles
-          size={80}
-          className={`
-            text-indigo-100 opacity-90 z-10
-            transition-transform duration-200
-            ${isClicking ? 'scale-90' : 'scale-100'}
-            animate-pulse
-          `}
-        />
+        <img src="/icons/clicker.png" alt="Clicker" className="w-32 h-32 md:w-48 md:h-48 z-10 select-none pointer-events-none" draggable="false" />
       </div>
     </div>
   );

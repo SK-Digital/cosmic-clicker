@@ -25,6 +25,8 @@ Cosmic Clicker is a clicker/idle game where players collect stardust by clicking
 - [ ] **Fix the weird box/overlay**: Audit containers and overlays for unintended backgrounds or borders
 - [ ] **Enhance falling star/particle animation**: Add more dynamic, visually appealing effects (e.g., trails, glow, color variation)
 - [ ] **Polish background and UI elements**: Improve gradients, panel transparency, and overall polish
+- [x] **Hide top bar icons when overlays open:** The icon buttons in the top bar (Rush Events, Upgrades, Achievements, Stats, Settings) are now hidden when any overlay panel is open, to prevent UI overlap and visual clutter.
+- [x] **Replace Lucide/SVG icons with pixel art PNGs:** All major UI icons (clicker, top bar, upgrades, rush events) now use pixel art PNGs from the Cosmic Clicker Assets folder for a more cohesive visual style.
 
 ### 2. Rush Events System
 - [ ] **Add a Rush Events tab/panel**: Display current/active rush events and their effects
@@ -37,8 +39,8 @@ Cosmic Clicker is a clicker/idle game where players collect stardust by clicking
 - [ ] **Upgrade UI:** Show max level, effects, and lock upgrades when maxed.
 
 ### 4. Progression & Features
-- [ ] **Prestige/Rebirth system:** Allow players to reset for permanent bonuses and meta-progression.
-- [ ] **Achievements system:** Track and reward milestones (e.g., total clicks, stardust earned, upgrades bought).
+- [x] **Prestige system:** Implemented and tested. Prestige stats (count, cosmic shards, multiplier) are now shown in the stats panel, and players can prestige via a confirmation modal. All progress except achievements and prestige stats is reset on prestige.
+- [ ] **Achievements polish and audio integration:** Next up per clicker_phases.md.
 - [ ] **Lifetime stats box:** Display all-time stats and records for the player.
 - [ ] **Sound effects & music:** Add clicker and purchase sounds, with volume control via a settings menu and a themed slider bar.
 - [ ] **Settings menu:** Allow toggling music, sound, and visual effects.

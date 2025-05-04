@@ -24,6 +24,7 @@ const Game: React.FC = () => {
   const [showAchievements, setShowAchievements] = useState(false);
   const [showStats, setShowStats] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [showPrestige, setShowPrestige] = useState(false);
   const { dispatch, state } = useGame();
   const activeEvent = state.activeEvents.length > 0 ? state.activeEvents[0] : null;
   const eventMultiplier = getActiveEventMultiplier(state.activeEvents);
@@ -105,78 +106,87 @@ const Game: React.FC = () => {
           <h1 className="text-xl md:text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-blue-400 to-indigo-500">
             Cosmic Clicker
           </h1>
-          <div className="flex gap-2">
-            <div className="relative group">
-              <button 
-                onClick={() => setShowRushEvents(!showRushEvents)}
-                className={`p-3 rounded-full bg-indigo-900/60 hover:bg-indigo-800/80 text-white transition-colors`}
-              >
-                <Rocket className="w-6 h-6 text-white" strokeWidth={2} />
-              </button>
-              <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-2 py-1 bg-indigo-900/95 rounded text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity z-50">
-                Rush Events
+          {/* Hide icons when any overlay is open */}
+          {!(showUpgrades || showRushEvents || showAchievements || showStats || showSettings || showPrestige) && (
+            <div className="flex gap-2">
+              <div className="relative group">
+                <button 
+                  onClick={() => setShowRushEvents(!showRushEvents)}
+                  className={`p-3 rounded-full bg-indigo-900/60 hover:bg-indigo-800/80 text-white transition-colors`}
+                >
+                  <img src="/icons/rocket.png" alt="Rush Events" className="w-10 h-10" />
+                </button>
+                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-2 py-1 bg-indigo-900/95 rounded text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity z-50">
+                  Rush Events
+                </div>
+              </div>
+              {/* Prestige Button */}
+              <div className="relative group">
+                <button
+                  onClick={() => setShowPrestige(true)}
+                  className="p-3 rounded-full bg-indigo-900/60 hover:bg-indigo-800/80 text-white transition-colors"
+                  title="Prestige"
+                >
+                  <img src="/icons/prestige.png" alt="Prestige" className="w-10 h-10" />
+                </button>
+                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-2 py-1 bg-indigo-900/95 rounded text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity z-50">
+                  Prestige
+                </div>
+              </div>
+              <div className="relative group">
+                <button 
+                  onClick={() => setShowUpgrades(!showUpgrades)}
+                  className={`
+                    p-3 rounded-full 
+                    ${showUpgrades 
+                      ? 'bg-indigo-700 text-white' 
+                      : 'bg-indigo-900/60 hover:bg-indigo-800/80'} 
+                    transition-colors
+                  `}
+                >
+                  <img src="/icons/shop.png" alt="Upgrades" className="w-10 h-10" />
+                </button>
+                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-2 py-1 bg-indigo-900/95 rounded text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity z-50">
+                  Upgrades
+                </div>
+              </div>
+              <div className="relative group">
+                <button
+                  onClick={() => setShowAchievements(true)}
+                  className="p-3 rounded-full bg-indigo-900/60 hover:bg-indigo-800/80 text-white transition-colors"
+                >
+                  <img src="/icons/achievements.png" alt="Achievements" className="w-10 h-10" />
+                </button>
+                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-2 py-1 bg-indigo-900/95 rounded text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity z-50">
+                  Achievements
+                </div>
+              </div>
+              <div className="relative group">
+                <button
+                  onClick={() => setShowStats(true)}
+                  className="p-3 rounded-full bg-indigo-900/60 hover:bg-indigo-800/80 text-white transition-colors"
+                  title="Lifetime Stats"
+                >
+                  <img src="/icons/stats.png" alt="Lifetime Stats" className="w-10 h-10" />
+                </button>
+                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-2 py-1 bg-indigo-900/95 rounded text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity z-50">
+                  Lifetime Stats
+                </div>
+              </div>
+              <div className="relative group">
+                <button
+                  onClick={() => setShowSettings(true)}
+                  className="p-3 rounded-full bg-indigo-900/60 hover:bg-indigo-800/80 text-white transition-colors"
+                  title="Settings"
+                >
+                  <img src="/icons/setting.png" alt="Settings" className="w-10 h-10" />
+                </button>
+                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-2 py-1 bg-indigo-900/95 rounded text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity z-50">
+                  Settings
+                </div>
               </div>
             </div>
-            <div className="relative group">
-              <button 
-                onClick={() => setShowUpgrades(!showUpgrades)}
-                className={`
-                  p-3 rounded-full 
-                  ${showUpgrades 
-                    ? 'bg-indigo-700 text-white' 
-                    : 'bg-indigo-900/60 hover:bg-indigo-800/80'} 
-                  transition-colors
-                `}
-              >
-                <Store className="w-6 h-6" />
-              </button>
-              <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-2 py-1 bg-indigo-900/95 rounded text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity z-50">
-                Upgrades
-              </div>
-            </div>
-            <div className="relative group">
-              <button
-                onClick={() => setShowAchievements(true)}
-                className="p-3 rounded-full bg-indigo-900/60 hover:bg-indigo-800/80 text-white transition-colors"
-              >
-                <svg width="24" height="24" viewBox="0 0 48 48" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="12" y="8" width="24" height="16" rx="4" />
-                  <path d="M16 8V4h16v4" />
-                  <path d="M24 24v8" />
-                  <circle cx="24" cy="40" r="4" />
-                  <path d="M12 12c-4 0-4 8 0 8" />
-                  <path d="M36 12c4 0 4 8 0 8" />
-                </svg>
-              </button>
-              <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-2 py-1 bg-indigo-900/95 rounded text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity z-50">
-                Achievements
-              </div>
-            </div>
-            <div className="relative group">
-              <button
-                onClick={() => setShowStats(true)}
-                className="p-3 rounded-full bg-indigo-900/60 hover:bg-indigo-800/80 text-white transition-colors"
-                title="Lifetime Stats"
-              >
-                <BarChart3 className="w-6 h-6" />
-              </button>
-              <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-2 py-1 bg-indigo-900/95 rounded text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity z-50">
-                Lifetime Stats
-              </div>
-            </div>
-            <div className="relative group">
-              <button
-                onClick={() => setShowSettings(true)}
-                className="p-3 rounded-full bg-indigo-900/60 hover:bg-indigo-800/80 text-white transition-colors"
-                title="Settings"
-              >
-                <Settings className="w-6 h-6" />
-              </button>
-              <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-2 py-1 bg-indigo-900/95 rounded text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity z-50">
-                Settings
-              </div>
-            </div>
-          </div>
+          )}
         </div>
 
         <div className="flex items-center justify-center w-full max-w-5xl px-4 gap-8 bg-transparent">
@@ -235,6 +245,51 @@ const Game: React.FC = () => {
       {showSettings && (
         <div className="fixed right-0 top-0 bottom-0 z-40 w-96 max-w-full">
           <SettingsPanel onClose={() => setShowSettings(false)} />
+        </div>
+      )}
+      {/* Prestige Modal */}
+      {showPrestige && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" data-testid="prestige-modal">
+          <div className="bg-indigo-900 p-8 rounded-xl shadow-2xl border-2 border-indigo-500 flex flex-col items-center max-w-xs">
+            <h3 className="text-lg font-bold text-purple-300 mb-2 flex items-center gap-2">
+              <img src="/icons/prestige.png" alt="Prestige" className="w-8 h-8" /> Prestige
+            </h3>
+            <div className="space-y-2 mb-4 w-full">
+              <div className="flex justify-between w-full">
+                <span className="text-white/80">Prestige Count:</span>
+                <span className="font-medium text-purple-200" data-testid="prestige-count">{state.prestigeCount}</span>
+              </div>
+              <div className="flex justify-between w-full">
+                <span className="text-white/80">Cosmic Shards:</span>
+                <span className="font-medium text-purple-200" data-testid="prestige-cosmic-shards">{state.prestigeCurrency}</span>
+              </div>
+              <div className="flex justify-between w-full">
+                <span className="text-white/80">Stardust Multiplier:</span>
+                <span className="font-medium text-purple-200">{(1 + state.prestigeCount * 0.1).toFixed(1)}x</span>
+              </div>
+              <div className="flex justify-between w-full">
+                <span className="text-white/80">Next Prestige:</span>
+                <span className="font-medium text-purple-200">{Math.floor(Math.sqrt((state.totalStardustEarned || 0) / 1_000_000))} Cosmic Shard{Math.floor(Math.sqrt((state.totalStardustEarned || 0) / 1_000_000)) !== 1 ? 's' : ''}</span>
+              </div>
+              <div className="text-xs text-purple-100 mt-2">Earn 1 Cosmic Shard for every 1,000,000 total stardust earned (sqrt scaling). All progress except achievements and cosmic shards will be reset.</div>
+            </div>
+            <div className="flex gap-4 mt-2">
+              <button
+                className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-6 rounded shadow"
+                disabled={Math.floor(Math.sqrt((state.totalStardustEarned || 0) / 1_000_000)) < 1}
+                onClick={() => { dispatch({ type: 'PRESTIGE' }); setShowPrestige(false); }}
+                data-testid="prestige-confirm-btn"
+              >
+                Prestige
+              </button>
+              <button
+                className="bg-indigo-700 hover:bg-indigo-800 text-white font-bold py-2 px-6 rounded shadow"
+                onClick={() => setShowPrestige(false)}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

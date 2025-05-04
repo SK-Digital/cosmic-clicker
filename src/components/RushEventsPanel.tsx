@@ -11,25 +11,15 @@ interface RushEventsPanelProps {
 const getEventIcon = (icon: string) => {
   switch (icon) {
     case 'meteor':
-      // White version of meteor.svg
       return (
-        <img src={MeteorIcon} alt="Meteor" style={{ width: 24, height: 24, filter: 'invert(1) brightness(2)' }} />
+        <img src="/icons/meteor.png" alt="Meteor" style={{ width: 32, height: 32 }} />
       );
     case 'blackhole':
       return (
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="url(#blackholeGradient)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <defs>
-            <radialGradient id="blackholeGradient" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stopColor="#fff" />
-              <stop offset="100%" stopColor="#a78bfa" />
-            </radialGradient>
-          </defs>
-          <circle cx="12" cy="12" r="8" stroke="url(#blackholeGradient)" />
-          <circle cx="12" cy="12" r="3" fill="url(#blackholeGradient)" />
-        </svg>
+        <img src="/icons/blackhole.png" alt="Black Hole" style={{ width: 32, height: 32 }} />
       );
     default:
-      return <Circle className="w-6 h-6 text-white" strokeWidth={2} />;
+      return null;
   }
 };
 

@@ -51,7 +51,7 @@ const StardustCounter: React.FC<StardustCounterProps> = ({ eventMultiplier = 1 }
       <div className="space-y-4">
         {/* Stardust Counter */}
         <div className="flex items-center gap-2">
-          <Star className="w-5 h-5 text-yellow-400" />
+          <img src="/icons/star.png" alt="Stardust" className="w-8 h-8" />
           <div className={`
             text-2xl font-bold
             bg-clip-text text-transparent

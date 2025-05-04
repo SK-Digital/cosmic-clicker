@@ -10,9 +10,9 @@ interface TabConfig {
 }
 
 const TABS: TabConfig[] = [
-  { id: 'click', icon: <MousePointer className="w-5 h-5" />, tooltip: 'Click Power' },
-  { id: 'passive', icon: <Stars className="w-5 h-5" />, tooltip: 'Passive Income' },
-  { id: 'event', icon: <Rocket className="w-5 h-5 text-white" strokeWidth={2} />, tooltip: 'Event Chance' },
+  { id: 'click', icon: <img src="/icons/clicker.png" alt="Click Power" className="w-10 h-10" />, tooltip: 'Click Power' },
+  { id: 'passive', icon: <img src="/icons/star.png" alt="Passive Income" className="w-10 h-10" />, tooltip: 'Passive Income' },
+  { id: 'event', icon: <img src="/icons/rocket.png" alt="Event Chance" className="w-10 h-10" onError={e => { e.currentTarget.src = '/icons/blackhole.png'; }} />, tooltip: 'Event Chance' },
 ];
 
 const BULK_OPTIONS = [1, 5, 10, 25];

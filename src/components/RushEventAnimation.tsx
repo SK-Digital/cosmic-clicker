@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Sparkles } from 'lucide-react';
 
 interface RushEventAnimationProps {
@@ -8,39 +8,7 @@ interface RushEventAnimationProps {
   backgroundLayer?: boolean;
 }
 
-// --- Meteor Shower Animation ---
-const METEOR_COLORS = [
-  'rgba(255,255,255,0.98)', // white
-  'rgba(120,180,255,0.98)', // blue
-  'rgba(255,140,0,0.98)' // orange
-];
-
-const METEOR_MIN_LEN = 100;
-const METEOR_MAX_LEN = 220;
-const METEOR_MIN_SPEED = 10;
-const METEOR_MAX_SPEED = 18;
-const METEOR_SPAWN_INTERVAL = 200; // ms (slower, more subtle)
-const METEOR_THICKNESS = 5; // thinner
-
-function randomMeteor(canvasWidth: number, canvasHeight: number) {
-  // Meteors streak diagonally from random X at top, angle ~-30deg
-  const startX = Math.random() * canvasWidth;
-  const startY = -30;
-  const angle = (-Math.PI / 6) + (Math.random() - 0.5) * 0.2; // -30deg ± ~6deg
-  const len = METEOR_MIN_LEN + Math.random() * (METEOR_MAX_LEN - METEOR_MIN_LEN);
-  const speed = METEOR_MIN_SPEED + Math.random() * (METEOR_MAX_SPEED - METEOR_MIN_SPEED);
-  const color = METEOR_COLORS[Math.floor(Math.random() * METEOR_COLORS.length)];
-  return {
-    x: startX,
-    y: startY,
-    angle,
-    len,
-    speed,
-    color,
-    alpha: 1,
-  };
-}
-
+// --- Meteor Shower Animation (Canvas) ---
 const MeteorShower: React.FC<{ active: boolean }> = ({ active }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const meteors = useRef<any[]>([]);
@@ -117,7 +85,30 @@ const MeteorShower: React.FC<{ active: boolean }> = ({ active }) => {
   return (
     <>
       {active && (
-        <div className="rush-meteor" style={{position: 'fixed', top: 0, left: 0, width: 1, height: 1, opacity: 0, pointerEvents: 'none', zIndex: 100}} aria-hidden="true" />
+        <>
+          {/* Pixelart meteor overlay */}
+          <div style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100vw',
+            height: '100vh',
+            zIndex: 5,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            pointerEvents: 'none',
+          }}>
+            <img src="/icons/meteor.png" alt="Meteor Overlay" style={{
+              width: '320px',
+              height: '320px',
+              opacity: 0.18,
+              filter: 'drop-shadow(0 0 32px orange)',
+              pointerEvents: 'none',
+            }} />
+          </div>
+          <div className="rush-meteor" style={{position: 'fixed', top: 0, left: 0, width: 1, height: 1, opacity: 0, pointerEvents: 'none', zIndex: 100}} aria-hidden="true" />
+        </>
       )}
       <canvas
         ref={canvasRef}
@@ -128,7 +119,7 @@ const MeteorShower: React.FC<{ active: boolean }> = ({ active }) => {
   );
 };
 
-// --- Black Hole Animation ---
+// --- Black Hole Animation (Canvas) ---
 const BlackHole: React.FC<{ duration: number; onComplete?: () => void; localCenter?: boolean; backgroundLayer?: boolean }> = ({ duration, onComplete, localCenter, backgroundLayer }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const running = useRef(true);
@@ -257,11 +248,28 @@ const BlackHole: React.FC<{ duration: number; onComplete?: () => void; localCent
         : 'rush-blackhole fixed inset-0 pointer-events-none z-40 flex items-center justify-center'}
       style={localCenter || backgroundLayer ? {} : { marginLeft: '25vw', width: '75vw', maxWidth: '1200px' }}
     >
-      <canvas
-        ref={canvasRef}
-        className="w-full h-full"
-        style={{ width: '100%', height: '100%' }}
-      />
+      {/* Pixelart blackhole overlay */}
+      <div style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
+        zIndex: 5,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        pointerEvents: 'none',
+      }}>
+        <img src="/icons/blackhole.png" alt="Black Hole Overlay" style={{
+          width: '340px',
+          height: '340px',
+          opacity: 0.16,
+          filter: 'drop-shadow(0 0 40px #7c3aed)',
+          pointerEvents: 'none',
+        }} />
+      </div>
+      <canvas ref={canvasRef} style={{ width: '100%', height: '100%', maxWidth: 480, maxHeight: 480 }} />
     </div>
   );
 };

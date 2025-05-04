@@ -34,6 +34,9 @@ export interface GameState {
   totalClicks: number;
   totalUpgradesBought: number;
   totalEventsTriggered: number;
+  prestigeCount: number;
+  prestigeCurrency: number;
+  totalStardustEarned: number;
 }
 
 const initialUpgrades: Record<string, Upgrade> = {
@@ -205,6 +208,9 @@ const initialState: GameState = {
   totalClicks: 0,
   totalUpgradesBought: 0,
   totalEventsTriggered: 0,
+  prestigeCount: 0,
+  prestigeCurrency: 0,
+  totalStardustEarned: 0,
 };
 
 const calculatePassiveIncome = (upgrades: Record<string, Upgrade>): number => {
@@ -271,7 +277,8 @@ type GameAction =
   | { type: 'LOAD_GAME'; state: GameState }
   | { type: 'START_EVENT'; event: { id: string; name: string; duration: number; startedAt: number } }
   | { type: 'END_EVENT'; eventId: string; startedAt: number }
-  | { type: 'ACHIEVEMENT_PROGRESS'; id: string; progress?: number; unlock?: boolean };
+  | { type: 'ACHIEVEMENT_PROGRESS'; id: string; progress?: number; unlock?: boolean }
+  | { type: 'PRESTIGE' };
 
 const gameReducer = (state: GameState, action: GameAction): GameState => {
   switch (action.type) {
@@ -301,6 +308,7 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       return {
         ...state,
         stardust: state.stardust + action.amount,
+        totalStardustEarned: (state.totalStardustEarned || 0) + action.amount,
       };
     }
     case 'BUY_UPGRADE': {
@@ -335,6 +343,7 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         ...state,
         stardust: state.stardust + passiveGain,
         lastTick: now,
+        totalStardustEarned: (state.totalStardustEarned || 0) + passiveGain,
       };
       // Check for expired events
       newState.activeEvents.forEach(event => {
@@ -404,6 +413,18 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         achievements[action.id] = { ...achievements[action.id], progress: action.progress };
       }
       return { ...state, achievements };
+    }
+    case 'PRESTIGE': {
+      // Sensible default: earn prestigeCurrency = floor(sqrt(totalStardustEarned / 1,000,000)), +10% stardust multiplier per prestige
+      const earned = Math.floor(Math.sqrt((state.totalStardustEarned || 0) / 1_000_000));
+      if (earned < 1) return state; // Not enough for prestige
+      return {
+        ...initialState,
+        prestigeCount: (state.prestigeCount || 0) + 1,
+        prestigeCurrency: (state.prestigeCurrency || 0) + earned,
+        totalStardustEarned: 0, // Reset for next prestige
+        achievements: state.achievements, // Keep achievements
+      };
     }
     default:
       return state;

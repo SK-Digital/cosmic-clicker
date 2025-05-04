@@ -7,6 +7,16 @@
 - public/
   - click-sound.mp3 — Click sound effect
   - nebula-background.svg — Nebula background image
+  - icons/
+    - clicker.png: Main clicker button
+    - star.png: Stardust, passive upgrades, and stardust counter
+    - rocket.png: Rush Events icon, event upgrades
+    - shop.png: Upgrades/shop icon
+    - stats.png: Stats panel icon
+    - setting.png: Settings icon
+    - achievements.png: Achievements icon
+    - meteor.png: Meteor rush event visual
+    - blackhole.png: Black hole rush event visual
 - src/
   - App.tsx — Main app entry
   - main.tsx — React entry point
@@ -152,3 +162,9 @@ Update this file whenever the file structure or major project details change.
 - Ensure all achievements are tracked and displayed correctly as new ones are added.
 - Continue to follow clicker_phases.md and roadmap.md for next features (prestige, sound/settings, etc.).
 - Consider renaming StatsPanel to LifetimeStatsPanel for clarity as the stats system expands.
+
+- The icon buttons in the top bar (Rush Events, Upgrades, Achievements, Stats, Settings) are now hidden when any overlay panel is open (shop, rush events, achievements, stats, or settings), to prevent UI overlap and visual clutter. (src/components/Game.tsx)
+
+- Prestige system added: Game state now tracks prestigeCount (number of prestiges), prestigeCurrency (permanent bonus, e.g. cosmic shards), and totalStardustEarned. When the PRESTIGE action is triggered, all progress except achievements and prestige stats is reset. Prestige currency is earned as floor(sqrt(totalStardustEarned / 1,000,000)), and each prestige increases a permanent stardust multiplier by 10%. Achievements are retained on prestige.
+
+- The stats panel now displays prestige stats (prestigeCount, prestigeCurrency, stardust multiplier) and includes a prestige button with a confirmation modal. The prestige system is fully implemented and tested. Next up: achievements polish and audio integration.

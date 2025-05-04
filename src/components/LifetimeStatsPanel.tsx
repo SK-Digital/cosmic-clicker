@@ -19,6 +19,26 @@ const LifetimeStatsPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
         <button onClick={onClose} className="text-white/70 hover:text-white text-2xl">×</button>
       </div>
       <div className="flex-1 overflow-y-auto space-y-4">
+        {/* Prestige Stats */}
+        <div className="bg-indigo-900/80 p-3 rounded-lg border border-indigo-700/40 mb-4">
+          <h3 className="text-base font-bold text-purple-300 mb-2 flex items-center gap-2">
+            <img src="/icons/prestige.png" alt="Prestige" className="w-6 h-6 inline-block" /> Prestige
+          </h3>
+          <div className="space-y-1">
+            <div className="flex justify-between">
+              <span className="text-white/80">Prestige Count:</span>
+              <span className="font-medium text-purple-200">{state.prestigeCount}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-white/80">Cosmic Shards:</span>
+              <span className="font-medium text-purple-200">{state.prestigeCurrency}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-white/80">Stardust Multiplier:</span>
+              <span className="font-medium text-purple-200">{(1 + state.prestigeCount * 0.1).toFixed(1)}x</span>
+            </div>
+          </div>
+        </div>
         <div className="space-y-2">
           <div className="flex justify-between">
             <span className="text-white/80">Total Clicks:</span>
