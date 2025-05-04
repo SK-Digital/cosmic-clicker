@@ -84,4 +84,13 @@ Cosmic Clicker is a clicker/idle game where players collect stardust by clicking
 
 ---
 
-**This roadmap will be updated as features are added and the project evolves.** 
+**This roadmap will be updated as features are added and the project evolves.**
+
+## [IN PROGRESS] Supabase Auth & Cloud Save Integration
+- Supabase project and `game_saves` table created.
+- @supabase/supabase-js installed.
+- Supabase client utility added.
+- Next: Implement authentication UI/logic, refactor save/load, and update .env with Supabase keys.
+
+- Guest play is supported: users can play without an account, and their progress is saved locally.
+- Users can create an account at any time; existing progress will be tied to their new account and synced to the cloud. 

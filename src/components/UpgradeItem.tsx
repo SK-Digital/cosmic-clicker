@@ -138,6 +138,11 @@ const UpgradeItem: React.FC<UpgradeItemProps> = ({ upgrade, bulkAmount }) => {
                   Current: +{getCurrentEffect().toFixed(2)}% event chance<br />
                   After {effectiveBulkAmount}x: +{getNextEffect().toFixed(2)}% event chance
                 </>
+              ) : upgrade.type === 'click' ? (
+                <>
+                  Current: +{getCurrentEffect().toFixed(2)} stardust/click<br />
+                  After {effectiveBulkAmount}x: +{getNextEffect().toFixed(2)} stardust/click
+                </>
               ) : (
                 <>
                   Current: +{getCurrentEffect().toFixed(2)} stardust/sec<br />
