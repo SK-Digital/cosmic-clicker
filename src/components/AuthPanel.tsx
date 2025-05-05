@@ -21,6 +21,15 @@ const AuthPanel: React.FC = () => {
   const { dispatch, state, user: gameUser } = useGame();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [showReset, setShowReset] = useState(false);
+  const [resetEmail, setResetEmail] = useState('');
+  const [resetMsg, setResetMsg] = useState<string | null>(null);
+  const [showChangePassword, setShowChangePassword] = useState(false);
+  const [showChangeEmail, setShowChangeEmail] = useState(false);
+  const [changePassword, setChangePassword] = useState('');
+  const [changePasswordMsg, setChangePasswordMsg] = useState<string | null>(null);
+  const [changeEmail, setChangeEmail] = useState('');
+  const [changeEmailMsg, setChangeEmailMsg] = useState<string | null>(null);
 
   useEffect(() => {
     // Check for email verification event in URL
@@ -154,6 +163,22 @@ const AuthPanel: React.FC = () => {
     setLoading(false);
   };
 
+  const handlePasswordReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+    setResetMsg(null);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(resetEmail);
+      if (error) throw error;
+      setResetMsg('Password reset email sent! Check your inbox.');
+    } catch (err: any) {
+      setError(err.message || 'Failed to send reset email.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (user) {
     const displayName = user.user_metadata?.username || user.email;
     // Lifetime stats from state
@@ -265,58 +290,191 @@ const AuthPanel: React.FC = () => {
             </div>
           </div>
         )}
+        <button
+          className="w-full bg-indigo-700 hover:bg-indigo-800 text-white py-2 rounded-lg font-semibold mt-3 transition-colors"
+          onClick={() => setShowChangePassword(true)}
+        >
+          Change Password
+        </button>
+        <button
+          className="w-full bg-indigo-700 hover:bg-indigo-800 text-white py-2 rounded-lg font-semibold mt-3 transition-colors"
+          onClick={() => setShowChangeEmail(true)}
+        >
+          Change Email
+        </button>
+        {/* Change Password Modal */}
+        {showChangePassword && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
+            <div className="bg-gradient-to-br from-indigo-900 via-purple-900 to-indigo-800 border-2 border-indigo-500 rounded-2xl shadow-2xl p-8 max-w-sm w-full text-center relative">
+              <h2 className="text-2xl font-bold text-indigo-200 mb-2">Change Password</h2>
+              <input
+                type="password"
+                placeholder="New Password"
+                value={changePassword}
+                onChange={e => setChangePassword(e.target.value)}
+                className="w-full mb-3 p-2 rounded bg-indigo-800 text-white border border-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                required
+              />
+              <div className="flex gap-4 justify-center mt-4">
+                <button
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-6 rounded shadow-lg border-2 border-indigo-500 transition-colors"
+                  onClick={async () => {
+                    setLoading(true);
+                    setChangePasswordMsg(null);
+                    try {
+                      const { error } = await supabase.auth.updateUser({ password: changePassword });
+                      if (error) throw error;
+                      setChangePasswordMsg('Password updated! Please use your new password next time.');
+                    } catch (err: any) {
+                      setChangePasswordMsg(err.message || 'Failed to update password.');
+                    } finally {
+                      setLoading(false);
+                    }
+                  }}
+                  disabled={loading || !changePassword}
+                >
+                  Save
+                </button>
+                <button
+                  className="bg-gray-700 hover:bg-gray-800 text-white font-bold py-2 px-6 rounded shadow-lg border-2 border-gray-500 transition-colors"
+                  onClick={() => { setShowChangePassword(false); setChangePassword(''); setChangePasswordMsg(null); }}
+                  disabled={loading}
+                >
+                  Cancel
+                </button>
+              </div>
+              {changePasswordMsg && <div className="mt-3 text-center text-indigo-200 font-semibold">{changePasswordMsg}</div>}
+            </div>
+          </div>
+        )}
+        {/* Change Email Modal */}
+        {showChangeEmail && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
+            <div className="bg-gradient-to-br from-indigo-900 via-purple-900 to-indigo-800 border-2 border-indigo-500 rounded-2xl shadow-2xl p-8 max-w-sm w-full text-center relative">
+              <h2 className="text-2xl font-bold text-indigo-200 mb-2">Change Email</h2>
+              <input
+                type="email"
+                placeholder="New Email"
+                value={changeEmail}
+                onChange={e => setChangeEmail(e.target.value)}
+                className="w-full mb-3 p-2 rounded bg-indigo-800 text-white border border-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                required
+              />
+              <div className="flex gap-4 justify-center mt-4">
+                <button
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-6 rounded shadow-lg border-2 border-indigo-500 transition-colors"
+                  onClick={async () => {
+                    setLoading(true);
+                    setChangeEmailMsg(null);
+                    try {
+                      const { error } = await supabase.auth.updateUser({ email: changeEmail });
+                      if (error) throw error;
+                      setChangeEmailMsg('Confirmation email sent! Please check your new email to confirm the change.');
+                    } catch (err: any) {
+                      setChangeEmailMsg(err.message || 'Failed to update email.');
+                    } finally {
+                      setLoading(false);
+                    }
+                  }}
+                  disabled={loading || !changeEmail}
+                >
+                  Save
+                </button>
+                <button
+                  className="bg-gray-700 hover:bg-gray-800 text-white font-bold py-2 px-6 rounded shadow-lg border-2 border-gray-500 transition-colors"
+                  onClick={() => { setShowChangeEmail(false); setChangeEmail(''); setChangeEmailMsg(null); }}
+                  disabled={loading}
+                >
+                  Cancel
+                </button>
+              </div>
+              {changeEmailMsg && <div className="mt-3 text-center text-indigo-200 font-semibold">{changeEmailMsg}</div>}
+            </div>
+          </div>
+        )}
       </div>
     );
   }
 
   return (
-    <form onSubmit={handleAuth} className="p-6 bg-gradient-to-br from-indigo-900 via-purple-900 to-indigo-800 rounded-2xl border-2 border-indigo-500 shadow-2xl text-white max-w-xs mx-auto mt-8">
-      <h2 className="text-xl font-bold mb-4 text-center text-indigo-200 drop-shadow">{mode === 'login' ? 'Login' : 'Sign Up'}</h2>
-      {verificationMsg && <div className="text-green-300 mb-3 text-center font-semibold">{verificationMsg}</div>}
-      {signupMsg && <div className="text-green-300 mb-3 text-center font-semibold">{signupMsg}</div>}
-      {mode === 'signup' && (
+    showReset ? (
+      <form onSubmit={handlePasswordReset} className="p-6 bg-gradient-to-br from-indigo-900 via-purple-900 to-indigo-800 rounded-2xl border-2 border-indigo-500 shadow-2xl text-white max-w-xs mx-auto mt-8">
+        <h2 className="text-xl font-bold mb-4 text-center text-indigo-200 drop-shadow">Reset Password</h2>
+        {resetMsg && <div className="text-green-300 mb-3 text-center font-semibold">{resetMsg}</div>}
+        {error && <div className="text-pink-300 mb-3 text-center font-semibold">{error}</div>}
         <input
-          type="text"
-          placeholder="Username"
-          value={username}
-          onChange={e => setUsername(e.target.value)}
+          type="email"
+          placeholder="Email"
+          value={resetEmail}
+          onChange={e => setResetEmail(e.target.value)}
           className="w-full mb-3 p-2 rounded bg-indigo-800 text-white border border-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-400"
           required
         />
-      )}
-      <input
-        type="email"
-        placeholder="Email"
-        value={email}
-        onChange={e => setEmail(e.target.value)}
-        className="w-full mb-3 p-2 rounded bg-indigo-800 text-white border border-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-400"
-        required
-      />
-      <input
-        type="password"
-        placeholder="Password"
-        value={password}
-        onChange={e => setPassword(e.target.value)}
-        className="w-full mb-3 p-2 rounded bg-indigo-800 text-white border border-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-400"
-        required
-      />
-      {error && <div className="text-pink-300 mb-3 text-center font-semibold">{error}</div>}
-      <button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-lg font-semibold transition-colors mb-2" disabled={loading}>
-        {loading ? (mode === 'login' ? 'Logging in...' : 'Signing up...') : (mode === 'login' ? 'Login' : 'Sign Up')}
-      </button>
-      {showResend && (
-        <button type="button" className="w-full bg-indigo-700 hover:bg-indigo-800 text-white py-2 rounded-lg font-semibold transition-colors mb-2" onClick={handleResendVerification} disabled={loading}>
-          Resend Verification Email
+        <button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-lg font-semibold transition-colors mb-2" disabled={loading}>
+          {loading ? 'Sending...' : 'Send Reset Email'}
         </button>
-      )}
-      <div className="mt-2 text-sm text-center text-indigo-200">
-        {mode === 'login' ? (
-          <span>Don&apos;t have an account? <button type="button" className="underline text-indigo-300 hover:text-indigo-100" onClick={() => setMode('signup')}>Sign Up</button></span>
-        ) : (
-          <span>Already have an account? <button type="button" className="underline text-indigo-300 hover:text-indigo-100" onClick={() => setMode('login')}>Login</button></span>
+        <div className="mt-2 text-sm text-center text-indigo-200">
+          <button type="button" className="underline text-indigo-300 hover:text-indigo-100" onClick={() => { setShowReset(false); setError(null); setResetMsg(null); }}>
+            Back to Login
+          </button>
+        </div>
+      </form>
+    ) : (
+      <form onSubmit={handleAuth} className="p-6 bg-gradient-to-br from-indigo-900 via-purple-900 to-indigo-800 rounded-2xl border-2 border-indigo-500 shadow-2xl text-white max-w-xs mx-auto mt-8">
+        <h2 className="text-xl font-bold mb-4 text-center text-indigo-200 drop-shadow">{mode === 'login' ? 'Login' : 'Sign Up'}</h2>
+        {verificationMsg && <div className="text-green-300 mb-3 text-center font-semibold">{verificationMsg}</div>}
+        {signupMsg && <div className="text-green-300 mb-3 text-center font-semibold">{signupMsg}</div>}
+        {mode === 'signup' && (
+          <input
+            type="text"
+            placeholder="Username"
+            value={username}
+            onChange={e => setUsername(e.target.value)}
+            className="w-full mb-3 p-2 rounded bg-indigo-800 text-white border border-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+            required
+          />
         )}
-      </div>
-    </form>
+        <input
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={e => setEmail(e.target.value)}
+          className="w-full mb-3 p-2 rounded bg-indigo-800 text-white border border-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+          required
+        />
+        <input
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={e => setPassword(e.target.value)}
+          className="w-full mb-3 p-2 rounded bg-indigo-800 text-white border border-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+          required
+        />
+        {error && <div className="text-pink-300 mb-3 text-center font-semibold">{error}</div>}
+        <button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-lg font-semibold transition-colors mb-2" disabled={loading}>
+          {loading ? (mode === 'login' ? 'Logging in...' : 'Signing up...') : (mode === 'login' ? 'Login' : 'Sign Up')}
+        </button>
+        {showResend && (
+          <button type="button" className="w-full bg-indigo-700 hover:bg-indigo-800 text-white py-2 rounded-lg font-semibold transition-colors mb-2" onClick={handleResendVerification} disabled={loading}>
+            Resend Verification Email
+          </button>
+        )}
+        {mode === 'login' && (
+          <div className="mt-2 text-sm text-center text-indigo-200">
+            <button type="button" className="underline text-indigo-300 hover:text-indigo-100" onClick={() => { setShowReset(true); setError(null); setResetMsg(null); }}>
+              Forgot Password?
+            </button>
+          </div>
+        )}
+        <div className="mt-2 text-sm text-center text-indigo-200">
+          {mode === 'login' ? (
+            <span>Don&apos;t have an account? <button type="button" className="underline text-indigo-300 hover:text-indigo-100" onClick={() => setMode('signup')}>Sign Up</button></span>
+          ) : (
+            <span>Already have an account? <button type="button" className="underline text-indigo-300 hover:text-indigo-100" onClick={() => setMode('login')}>Login</button></span>
+          )}
+        </div>
+      </form>
+    )
   );
 };
 
